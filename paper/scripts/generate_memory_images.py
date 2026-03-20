@@ -70,7 +70,7 @@ def run(path:str,dataset_dir:str):
         return transformed_im
 
 
-    for batch_idx, (images, _) in enumerate(test_loader):
+    for batch_idx, (images, labels) in enumerate(test_loader): #before, it was images, _ which discarded the true labels
         print("Batch:{}/{}".format(batch_idx, len(test_loader)), end='\r')
         try:
             memory, _ = next(memory_iter)
@@ -87,10 +87,17 @@ def run(path:str,dataset_dir:str):
 
         # compute memory outputs
         mem_val,memory_sorted_index = torch.sort(rw,descending=True)
-        fig = plt.figure(figsize=(batch_size_test*2, 4),dpi=300)
-        columns = batch_size_test
+
+        # only keep wrongly predicted images
+        wrong_indices = [ind for ind in range(len(images)) if predictions[ind] != labels[ind]] #only keep the wrong predictions
+        if len(wrong_indices) == 0:
+            continue
+
+        num_wrong = len(wrong_indices)
+        fig = plt.figure(figsize=(num_wrong*2, 4),dpi=300)
+        columns = num_wrong
         rows = 2
-        for ind in range(len(images)):
+        for col, ind in enumerate(wrong_indices): # dont go through all images, only wrong predictions
             input_selected = images[ind].unsqueeze(0)
 
             # M_c u M_e : set of sample with a positive impact on prediction
@@ -102,13 +109,14 @@ def run(path:str,dataset_dir:str):
 
             # build and store image
 
-            fig.add_subplot(rows, columns, ind+1)
+            fig.add_subplot(rows, columns, col+1)
             plt.imshow((get_image(input_selected)* 255).astype(np.uint8),interpolation='nearest', aspect='equal')
-            plt.title('Prediction:{}'.format(name_classes[predictions[ind]]))
+            img_index = batch_idx * batch_size_test + ind #batch is what batch, batch size is how big, ind is which image in the batch
+            plt.title('#{} True:{} Pred:{}'.format(img_index, name_classes[labels[ind]], name_classes[predictions[ind]]))
             plt.axis('off')
-            ax2 = fig.add_subplot(rows, columns, batch_size_test+1+ind)
+            ax2 = fig.add_subplot(rows, columns, num_wrong+1+col)
             plt.imshow((np.transpose(npimg, (1,2,0))* 255).astype(np.uint8),interpolation='nearest', aspect='equal')
-            plt.title('Used Samples')
+            plt.title('#{} Used Samples'.format(img_index))
             plt.axis('off')
         fig.tight_layout()
         fig.savefig(dir_save+str(batch_idx*batch_size_test+ind)+".png")
