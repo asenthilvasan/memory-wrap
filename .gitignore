@@ -5,3 +5,4 @@ core
 *transfer*.py
 *.pyc
 .vscode/
+paper/datasets/
