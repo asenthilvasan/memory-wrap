@@ -104,10 +104,11 @@ def run_evaluation(path:str,dataset_dir:str, num_runs:int=5):
         checkpoint = torch.load(path+name_model, map_location=device)
         model_name = checkpoint['model_name']
         modality = checkpoint['modality']
+        memory_strategy = checkpoint.get('memory_strategy', 'none')
         dataset_name = checkpoint['dataset_name']
         load_dataset = getattr(datasets, 'get_'+dataset_name)
 
-        model = utils.get_model(model_name,checkpoint['num_classes'],model_type=modality)
+        model = utils.get_model(model_name, checkpoint['num_classes'], model_type=modality, memory_strategy=memory_strategy)
         model.load_state_dict(checkpoint['model_state_dict'])
         model = model.to(device)
 

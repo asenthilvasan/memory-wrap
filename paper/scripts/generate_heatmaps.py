@@ -162,7 +162,8 @@ def run(path:str,dataset_dir:str):
         raise ValueError(f'Model\'s modality (model type) must be one of [\'memory\',\'encoder_memory\'], not {modality}.')
     dataset_name = checkpoint['dataset_name']
 
-    model = utils.get_model( checkpoint['model_name'],checkpoint['num_classes'],model_type= modality)
+    memory_strategy = checkpoint.get('memory_strategy', 'none')
+    model = utils.get_model(checkpoint['model_name'], checkpoint['num_classes'], model_type=modality, memory_strategy=memory_strategy)
     model.load_state_dict(checkpoint['model_state_dict'])
     model = model.to(device)
     model.eval()

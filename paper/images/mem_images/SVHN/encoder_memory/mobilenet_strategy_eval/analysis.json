@@ -366,54 +366,29 @@
     "top_weighted_memory": {
       "prediction": 7,
       "prediction_name": "7",
-      "prediction_confidence": 0.9719600081443787,
+      "prediction_confidence": 0.975109338760376,
       "correct": false,
-      "memory_size": 8,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1729,
-        206,
-        1444,
-        1689,
-        202,
-        1637,
-        1645,
-        1311
+        1729
       ],
       "memory_class_distribution": {
-        "7": 6,
-        "5": 1,
-        "3": 1
+        "7": 1
       },
-      "positive_memory_count": 8,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
+        0
       ],
       "positive_memory_dataset_indices": [
-        1729,
-        206,
-        1444,
-        1689,
-        202,
-        1637,
-        1645,
-        1311
+        1729
       ],
       "positive_memory_class_distribution": {
-        "7": 6,
-        "5": 1,
-        "3": 1
+        "7": 1
       },
       "true_class_count_in_memory": 0,
       "true_class_count_in_positive_memory": 0,
-      "predicted_class_count_in_memory": 6,
-      "predicted_class_count_in_positive_memory": 6,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -421,39 +396,7 @@
           "dataset_index": 1729,
           "label": 7,
           "label_name": "7",
-          "weight": 0.22848984599113464
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 206,
-          "label": 7,
-          "label_name": "7",
-          "weight": 0.17599615454673767
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1444,
-          "label": 7,
-          "label_name": "7",
-          "weight": 0.16585251688957214
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1689,
-          "label": 7,
-          "label_name": "7",
-          "weight": 0.16580399870872498
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 202,
-          "label": 7,
-          "label_name": "7",
-          "weight": 0.1472053825855255
+          "weight": 1.0
         }
       ]
     },
@@ -850,74 +793,29 @@
     "top_weighted_memory": {
       "prediction": 5,
       "prediction_name": "5",
-      "prediction_confidence": 0.5665062665939331,
+      "prediction_confidence": 0.49148666858673096,
       "correct": false,
-      "memory_size": 14,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        168,
-        922,
-        1910,
-        236,
-        1795,
-        186,
-        306,
-        1690,
-        1725,
-        1839,
-        1498,
-        141,
-        223,
-        1551
+        168
       ],
       "memory_class_distribution": {
-        "3": 3,
-        "5": 5,
-        "6": 5,
-        "8": 1
+        "3": 1
       },
-      "positive_memory_count": 14,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13
+        0
       ],
       "positive_memory_dataset_indices": [
-        168,
-        922,
-        1910,
-        236,
-        1795,
-        186,
-        306,
-        1690,
-        1725,
-        1839,
-        1498,
-        141,
-        223,
-        1551
+        168
       ],
       "positive_memory_class_distribution": {
-        "3": 3,
-        "5": 5,
-        "6": 5,
-        "8": 1
+        "3": 1
       },
-      "true_class_count_in_memory": 5,
-      "true_class_count_in_positive_memory": 5,
-      "predicted_class_count_in_memory": 5,
-      "predicted_class_count_in_positive_memory": 5,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 0,
+      "predicted_class_count_in_positive_memory": 0,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -925,39 +823,7 @@
           "dataset_index": 168,
           "label": 3,
           "label_name": "3",
-          "weight": 0.19642603397369385
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 922,
-          "label": 5,
-          "label_name": "5",
-          "weight": 0.18042075634002686
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1910,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.15804964303970337
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 236,
-          "label": 6,
-          "label_name": "6",
-          "weight": 0.11770057678222656
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1795,
-          "label": 6,
-          "label_name": "6",
-          "weight": 0.08516144752502441
+          "weight": 1.0
         }
       ]
     },
@@ -1352,71 +1218,29 @@
     "top_weighted_memory": {
       "prediction": 5,
       "prediction_name": "5",
-      "prediction_confidence": 0.366476833820343,
+      "prediction_confidence": 0.8094712495803833,
       "correct": false,
-      "memory_size": 13,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        734,
-        1852,
-        1222,
-        532,
-        369,
-        431,
-        758,
-        151,
-        872,
-        118,
-        761,
-        74,
-        408
+        734
       ],
       "memory_class_distribution": {
-        "5": 3,
-        "4": 5,
-        "1": 4,
-        "8": 1
+        "5": 1
       },
-      "positive_memory_count": 13,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12
+        0
       ],
       "positive_memory_dataset_indices": [
-        734,
-        1852,
-        1222,
-        532,
-        369,
-        431,
-        758,
-        151,
-        872,
-        118,
-        761,
-        74,
-        408
+        734
       ],
       "positive_memory_class_distribution": {
-        "5": 3,
-        "4": 5,
-        "1": 4,
-        "8": 1
+        "5": 1
       },
-      "true_class_count_in_memory": 5,
-      "true_class_count_in_positive_memory": 5,
-      "predicted_class_count_in_memory": 3,
-      "predicted_class_count_in_positive_memory": 3,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -1424,39 +1248,7 @@
           "dataset_index": 734,
           "label": 5,
           "label_name": "5",
-          "weight": 0.1487399786710739
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1852,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.14583097398281097
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1222,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.14244024455547333
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 532,
-          "label": 1,
-          "label_name": "1",
-          "weight": 0.12490765750408173
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 369,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.10525618493556976
+          "weight": 1.0
         }
       ]
     },
@@ -1858,85 +1650,29 @@
     "top_weighted_memory": {
       "prediction": 5,
       "prediction_name": "5",
-      "prediction_confidence": 0.6284837126731873,
+      "prediction_confidence": 0.37111133337020874,
       "correct": false,
-      "memory_size": 17,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1436,
-        314,
-        1452,
-        1163,
-        794,
-        1395,
-        795,
-        986,
-        276,
-        130,
-        1041,
-        721,
-        914,
-        102,
-        1346,
-        79,
-        1217
+        1436
       ],
       "memory_class_distribution": {
-        "9": 5,
-        "3": 3,
-        "5": 5,
-        "6": 2,
-        "8": 2
+        "9": 1
       },
-      "positive_memory_count": 17,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16
+        0
       ],
       "positive_memory_dataset_indices": [
-        1436,
-        314,
-        1452,
-        1163,
-        794,
-        1395,
-        795,
-        986,
-        276,
-        130,
-        1041,
-        721,
-        914,
-        102,
-        1346,
-        79,
-        1217
+        1436
       ],
       "positive_memory_class_distribution": {
-        "9": 5,
-        "3": 3,
-        "5": 5,
-        "6": 2,
-        "8": 2
+        "9": 1
       },
-      "true_class_count_in_memory": 3,
-      "true_class_count_in_positive_memory": 3,
-      "predicted_class_count_in_memory": 5,
-      "predicted_class_count_in_positive_memory": 5,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 0,
+      "predicted_class_count_in_positive_memory": 0,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -1944,39 +1680,7 @@
           "dataset_index": 1436,
           "label": 9,
           "label_name": "9",
-          "weight": 0.14199423789978027
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 314,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.1397639513015747
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1452,
-          "label": 5,
-          "label_name": "5",
-          "weight": 0.09217876195907593
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1163,
-          "label": 5,
-          "label_name": "5",
-          "weight": 0.09102988243103027
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 794,
-          "label": 9,
-          "label_name": "9",
-          "weight": 0.08713692426681519
+          "weight": 1.0
         }
       ]
     },
@@ -2376,88 +2080,31 @@
       ]
     },
     "top_weighted_memory": {
-      "prediction": 6,
-      "prediction_name": "6",
-      "prediction_confidence": 0.7868686318397522,
-      "correct": false,
-      "memory_size": 16,
+      "prediction": 4,
+      "prediction_name": "4",
+      "prediction_confidence": 0.458719402551651,
+      "correct": true,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1244,
-        1338,
-        562,
-        1143,
-        316,
-        1394,
-        573,
-        1792,
-        1622,
-        1436,
-        1863,
-        812,
-        1329,
-        1123,
-        525,
-        1921
+        1244
       ],
       "memory_class_distribution": {
-        "3": 4,
-        "6": 4,
-        "8": 3,
-        "1": 1,
-        "9": 2,
-        "4": 1,
-        "2": 1
+        "3": 1
       },
-      "positive_memory_count": 16,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15
+        0
       ],
       "positive_memory_dataset_indices": [
-        1244,
-        1338,
-        562,
-        1143,
-        316,
-        1394,
-        573,
-        1792,
-        1622,
-        1436,
-        1863,
-        812,
-        1329,
-        1123,
-        525,
-        1921
+        1244
       ],
       "positive_memory_class_distribution": {
-        "3": 4,
-        "6": 4,
-        "8": 3,
-        "1": 1,
-        "9": 2,
-        "4": 1,
-        "2": 1
+        "3": 1
       },
-      "true_class_count_in_memory": 1,
-      "true_class_count_in_positive_memory": 1,
-      "predicted_class_count_in_memory": 4,
-      "predicted_class_count_in_positive_memory": 4,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 0,
+      "predicted_class_count_in_positive_memory": 0,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -2465,39 +2112,7 @@
           "dataset_index": 1244,
           "label": 3,
           "label_name": "3",
-          "weight": 0.1278133988380432
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1338,
-          "label": 6,
-          "label_name": "6",
-          "weight": 0.1259772777557373
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 562,
-          "label": 6,
-          "label_name": "6",
-          "weight": 0.12286204099655151
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1143,
-          "label": 8,
-          "label_name": "8",
-          "weight": 0.11160582304000854
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 316,
-          "label": 6,
-          "label_name": "6",
-          "weight": 0.10993385314941406
+          "weight": 1.0
         }
       ]
     },
@@ -2884,58 +2499,29 @@
     "top_weighted_memory": {
       "prediction": 6,
       "prediction_name": "6",
-      "prediction_confidence": 0.7297433614730835,
+      "prediction_confidence": 0.757298469543457,
       "correct": false,
-      "memory_size": 10,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1596,
-        306,
-        592,
-        84,
-        981,
-        77,
-        739,
-        555,
-        1071,
-        1062
+        1596
       ],
       "memory_class_distribution": {
-        "6": 7,
-        "5": 3
+        "6": 1
       },
-      "positive_memory_count": 10,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9
+        0
       ],
       "positive_memory_dataset_indices": [
-        1596,
-        306,
-        592,
-        84,
-        981,
-        77,
-        739,
-        555,
-        1071,
-        1062
+        1596
       ],
       "positive_memory_class_distribution": {
-        "6": 7,
-        "5": 3
+        "6": 1
       },
       "true_class_count_in_memory": 0,
       "true_class_count_in_positive_memory": 0,
-      "predicted_class_count_in_memory": 7,
-      "predicted_class_count_in_positive_memory": 7,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -2943,39 +2529,7 @@
           "dataset_index": 1596,
           "label": 6,
           "label_name": "6",
-          "weight": 0.1857072412967682
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 306,
-          "label": 5,
-          "label_name": "5",
-          "weight": 0.15079447627067566
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 592,
-          "label": 6,
-          "label_name": "6",
-          "weight": 0.1304994523525238
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 84,
-          "label": 6,
-          "label_name": "6",
-          "weight": 0.1254883110523224
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 981,
-          "label": 6,
-          "label_name": "6",
-          "weight": 0.11487117409706116
+          "weight": 1.0
         }
       ]
     },
@@ -3371,80 +2925,29 @@
     "top_weighted_memory": {
       "prediction": 4,
       "prediction_name": "4",
-      "prediction_confidence": 0.7366346120834351,
+      "prediction_confidence": 0.6773406863212585,
       "correct": false,
-      "memory_size": 16,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        393,
-        1057,
-        776,
-        1971,
-        1707,
-        1300,
-        1445,
-        130,
-        303,
-        1372,
-        660,
-        319,
-        1605,
-        534,
-        1392,
-        1018
+        393
       ],
       "memory_class_distribution": {
-        "4": 8,
-        "2": 3,
-        "9": 3,
-        "3": 2
+        "4": 1
       },
-      "positive_memory_count": 16,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15
+        0
       ],
       "positive_memory_dataset_indices": [
-        393,
-        1057,
-        776,
-        1971,
-        1707,
-        1300,
-        1445,
-        130,
-        303,
-        1372,
-        660,
-        319,
-        1605,
-        534,
-        1392,
-        1018
+        393
       ],
       "positive_memory_class_distribution": {
-        "4": 8,
-        "2": 3,
-        "9": 3,
-        "3": 2
+        "4": 1
       },
-      "true_class_count_in_memory": 3,
-      "true_class_count_in_positive_memory": 3,
-      "predicted_class_count_in_memory": 8,
-      "predicted_class_count_in_positive_memory": 8,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -3452,39 +2955,7 @@
           "dataset_index": 393,
           "label": 4,
           "label_name": "4",
-          "weight": 0.15561708807945251
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1057,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.12460032105445862
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 776,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.10247501730918884
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1971,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.09166106581687927
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1707,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.0784466564655304
+          "weight": 1.0
         }
       ]
     },
@@ -3872,72 +3343,29 @@
     "top_weighted_memory": {
       "prediction": 4,
       "prediction_name": "4",
-      "prediction_confidence": 0.7541813850402832,
+      "prediction_confidence": 0.9937646389007568,
       "correct": false,
-      "memory_size": 14,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        335,
-        1244,
-        1379,
-        835,
-        1728,
-        127,
-        782,
-        1771,
-        521,
-        489,
-        1167,
-        134,
-        68,
-        1229
+        335
       ],
       "memory_class_distribution": {
-        "4": 4,
-        "3": 1,
-        "2": 9
+        "4": 1
       },
-      "positive_memory_count": 14,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13
+        0
       ],
       "positive_memory_dataset_indices": [
-        335,
-        1244,
-        1379,
-        835,
-        1728,
-        127,
-        782,
-        1771,
-        521,
-        489,
-        1167,
-        134,
-        68,
-        1229
+        335
       ],
       "positive_memory_class_distribution": {
-        "4": 4,
-        "3": 1,
-        "2": 9
+        "4": 1
       },
-      "true_class_count_in_memory": 9,
-      "true_class_count_in_positive_memory": 9,
-      "predicted_class_count_in_memory": 4,
-      "predicted_class_count_in_positive_memory": 4,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -3945,39 +3373,7 @@
           "dataset_index": 335,
           "label": 4,
           "label_name": "4",
-          "weight": 0.15305961668491364
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1244,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.15196718275547028
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1379,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.12548668682575226
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 835,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.12368150055408478
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1728,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.08726753294467926
+          "weight": 1.0
         }
       ]
     },
@@ -4375,81 +3771,29 @@
     "top_weighted_memory": {
       "prediction": 0,
       "prediction_name": "0",
-      "prediction_confidence": 0.4040745198726654,
+      "prediction_confidence": 0.5345238447189331,
       "correct": false,
-      "memory_size": 15,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        399,
-        760,
-        709,
-        1804,
-        1739,
-        606,
-        995,
-        1913,
-        91,
-        470,
-        1433,
-        1435,
-        785,
-        1811,
-        1264
+        399
       ],
       "memory_class_distribution": {
-        "0": 8,
-        "3": 1,
-        "5": 2,
-        "8": 2,
-        "9": 1,
-        "6": 1
+        "0": 1
       },
-      "positive_memory_count": 15,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14
+        0
       ],
       "positive_memory_dataset_indices": [
-        399,
-        760,
-        709,
-        1804,
-        1739,
-        606,
-        995,
-        1913,
-        91,
-        470,
-        1433,
-        1435,
-        785,
-        1811,
-        1264
+        399
       ],
       "positive_memory_class_distribution": {
-        "0": 8,
-        "3": 1,
-        "5": 2,
-        "8": 2,
-        "9": 1,
-        "6": 1
+        "0": 1
       },
-      "true_class_count_in_memory": 2,
-      "true_class_count_in_positive_memory": 2,
-      "predicted_class_count_in_memory": 8,
-      "predicted_class_count_in_positive_memory": 8,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -4457,39 +3801,7 @@
           "dataset_index": 399,
           "label": 0,
           "label_name": "0",
-          "weight": 0.15283985435962677
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 760,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.1301329880952835
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 709,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.12092794477939606
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1804,
-          "label": 5,
-          "label_name": "5",
-          "weight": 0.09004409611225128
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1739,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.07915236055850983
+          "weight": 1.0
         }
       ]
     },
@@ -4873,60 +4185,29 @@
     "top_weighted_memory": {
       "prediction": 9,
       "prediction_name": "9",
-      "prediction_confidence": 0.9997076392173767,
+      "prediction_confidence": 0.9996495246887207,
       "correct": false,
-      "memory_size": 10,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1890,
-        1995,
-        599,
-        60,
-        707,
-        1700,
-        160,
-        1499,
-        1284,
-        749
+        1890
       ],
       "memory_class_distribution": {
-        "9": 8,
-        "3": 1,
-        "5": 1
+        "9": 1
       },
-      "positive_memory_count": 10,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9
+        0
       ],
       "positive_memory_dataset_indices": [
-        1890,
-        1995,
-        599,
-        60,
-        707,
-        1700,
-        160,
-        1499,
-        1284,
-        749
+        1890
       ],
       "positive_memory_class_distribution": {
-        "9": 8,
-        "3": 1,
-        "5": 1
+        "9": 1
       },
       "true_class_count_in_memory": 0,
       "true_class_count_in_positive_memory": 0,
-      "predicted_class_count_in_memory": 8,
-      "predicted_class_count_in_positive_memory": 8,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -4934,39 +4215,7 @@
           "dataset_index": 1890,
           "label": 9,
           "label_name": "9",
-          "weight": 0.18586142361164093
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1995,
-          "label": 9,
-          "label_name": "9",
-          "weight": 0.1513310819864273
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 599,
-          "label": 9,
-          "label_name": "9",
-          "weight": 0.1444302350282669
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 60,
-          "label": 9,
-          "label_name": "9",
-          "weight": 0.1340249925851822
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 707,
-          "label": 9,
-          "label_name": "9",
-          "weight": 0.11159993708133698
+          "weight": 1.0
         }
       ]
     },
@@ -5365,77 +4614,29 @@
     "top_weighted_memory": {
       "prediction": 0,
       "prediction_name": "0",
-      "prediction_confidence": 0.6648412346839905,
+      "prediction_confidence": 0.4664563834667206,
       "correct": false,
-      "memory_size": 15,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        928,
-        1295,
-        497,
-        270,
-        816,
-        1240,
-        1358,
-        1083,
-        291,
-        726,
-        1647,
-        1302,
-        1631,
-        836,
-        94
+        928
       ],
       "memory_class_distribution": {
-        "0": 7,
-        "1": 5,
-        "4": 1,
-        "7": 2
+        "0": 1
       },
-      "positive_memory_count": 15,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14
+        0
       ],
       "positive_memory_dataset_indices": [
-        928,
-        1295,
-        497,
-        270,
-        816,
-        1240,
-        1358,
-        1083,
-        291,
-        726,
-        1647,
-        1302,
-        1631,
-        836,
-        94
+        928
       ],
       "positive_memory_class_distribution": {
-        "0": 7,
-        "1": 5,
-        "4": 1,
-        "7": 2
+        "0": 1
       },
-      "true_class_count_in_memory": 1,
-      "true_class_count_in_positive_memory": 1,
-      "predicted_class_count_in_memory": 7,
-      "predicted_class_count_in_positive_memory": 7,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -5443,39 +4644,7 @@
           "dataset_index": 928,
           "label": 0,
           "label_name": "0",
-          "weight": 0.16196982562541962
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1295,
-          "label": 1,
-          "label_name": "1",
-          "weight": 0.15232603251934052
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 497,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.1262507289648056
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 270,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.1155720204114914
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 816,
-          "label": 1,
-          "label_name": "1",
-          "weight": 0.0925096720457077
+          "weight": 1.0
         }
       ]
     },
@@ -5880,92 +5049,31 @@
       ]
     },
     "top_weighted_memory": {
-      "prediction": 9,
-      "prediction_name": "9",
-      "prediction_confidence": 0.7234673500061035,
-      "correct": false,
-      "memory_size": 18,
+      "prediction": 3,
+      "prediction_name": "3",
+      "prediction_confidence": 0.6693867444992065,
+      "correct": true,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1809,
-        319,
-        1574,
-        177,
-        989,
-        1019,
-        1116,
-        1388,
-        830,
-        696,
-        1594,
-        510,
-        1957,
-        1064,
-        868,
-        826,
-        603,
-        1700
+        1809
       ],
       "memory_class_distribution": {
-        "3": 4,
-        "9": 10,
-        "7": 1,
-        "6": 1,
-        "8": 1,
-        "4": 1
+        "3": 1
       },
-      "positive_memory_count": 18,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17
+        0
       ],
       "positive_memory_dataset_indices": [
-        1809,
-        319,
-        1574,
-        177,
-        989,
-        1019,
-        1116,
-        1388,
-        830,
-        696,
-        1594,
-        510,
-        1957,
-        1064,
-        868,
-        826,
-        603,
-        1700
+        1809
       ],
       "positive_memory_class_distribution": {
-        "3": 4,
-        "9": 10,
-        "7": 1,
-        "6": 1,
-        "8": 1,
-        "4": 1
+        "3": 1
       },
-      "true_class_count_in_memory": 4,
-      "true_class_count_in_positive_memory": 4,
-      "predicted_class_count_in_memory": 10,
-      "predicted_class_count_in_positive_memory": 10,
+      "true_class_count_in_memory": 1,
+      "true_class_count_in_positive_memory": 1,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -5973,39 +5081,7 @@
           "dataset_index": 1809,
           "label": 3,
           "label_name": "3",
-          "weight": 0.11525914072990417
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 319,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.11041733622550964
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1574,
-          "label": 9,
-          "label_name": "9",
-          "weight": 0.1051078736782074
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 177,
-          "label": 7,
-          "label_name": "7",
-          "weight": 0.09059223532676697
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 989,
-          "label": 9,
-          "label_name": "9",
-          "weight": 0.0830903947353363
+          "weight": 1.0
         }
       ]
     },
@@ -6408,86 +5484,29 @@
     "top_weighted_memory": {
       "prediction": 1,
       "prediction_name": "1",
-      "prediction_confidence": 0.9767311811447144,
+      "prediction_confidence": 0.9747729897499084,
       "correct": false,
-      "memory_size": 18,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        916,
-        1210,
-        427,
-        321,
-        1146,
-        1271,
-        302,
-        215,
-        264,
-        965,
-        809,
-        285,
-        1370,
-        1078,
-        1788,
-        1427,
-        909,
-        1287
+        916
       ],
       "memory_class_distribution": {
-        "1": 14,
-        "2": 1,
-        "4": 2,
-        "7": 1
+        "1": 1
       },
-      "positive_memory_count": 18,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17
+        0
       ],
       "positive_memory_dataset_indices": [
-        916,
-        1210,
-        427,
-        321,
-        1146,
-        1271,
-        302,
-        215,
-        264,
-        965,
-        809,
-        285,
-        1370,
-        1078,
-        1788,
-        1427,
-        909,
-        1287
+        916
       ],
       "positive_memory_class_distribution": {
-        "1": 14,
-        "2": 1,
-        "4": 2,
-        "7": 1
+        "1": 1
       },
-      "true_class_count_in_memory": 2,
-      "true_class_count_in_positive_memory": 2,
-      "predicted_class_count_in_memory": 14,
-      "predicted_class_count_in_positive_memory": 14,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -6495,39 +5514,7 @@
           "dataset_index": 916,
           "label": 1,
           "label_name": "1",
-          "weight": 0.1420244574546814
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1210,
-          "label": 1,
-          "label_name": "1",
-          "weight": 0.13999754190444946
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 427,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.09457284212112427
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 321,
-          "label": 1,
-          "label_name": "1",
-          "weight": 0.06496459245681763
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1146,
-          "label": 1,
-          "label_name": "1",
-          "weight": 0.06122869253158569
+          "weight": 1.0
         }
       ]
     },
@@ -6926,85 +5913,29 @@
     "top_weighted_memory": {
       "prediction": 3,
       "prediction_name": "3",
-      "prediction_confidence": 0.8234003782272339,
+      "prediction_confidence": 0.903915524482727,
       "correct": false,
-      "memory_size": 17,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        690,
-        1579,
-        795,
-        1539,
-        1783,
-        544,
-        974,
-        1797,
-        723,
-        1306,
-        1442,
-        1955,
-        716,
-        1340,
-        1048,
-        1925,
-        1652
+        690
       ],
       "memory_class_distribution": {
-        "3": 9,
-        "8": 3,
-        "5": 3,
-        "6": 1,
-        "9": 1
+        "3": 1
       },
-      "positive_memory_count": 17,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16
+        0
       ],
       "positive_memory_dataset_indices": [
-        690,
-        1579,
-        795,
-        1539,
-        1783,
-        544,
-        974,
-        1797,
-        723,
-        1306,
-        1442,
-        1955,
-        716,
-        1340,
-        1048,
-        1925,
-        1652
+        690
       ],
       "positive_memory_class_distribution": {
-        "3": 9,
-        "8": 3,
-        "5": 3,
-        "6": 1,
-        "9": 1
+        "3": 1
       },
-      "true_class_count_in_memory": 3,
-      "true_class_count_in_positive_memory": 3,
-      "predicted_class_count_in_memory": 9,
-      "predicted_class_count_in_positive_memory": 9,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -7012,39 +5943,7 @@
           "dataset_index": 690,
           "label": 3,
           "label_name": "3",
-          "weight": 0.1397992968559265
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1579,
-          "label": 8,
-          "label_name": "8",
-          "weight": 0.13142544031143188
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 795,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.11012887954711914
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1539,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.07851654291152954
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1783,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.07626420259475708
+          "weight": 1.0
         }
       ]
     },
@@ -7430,69 +6329,29 @@
     "top_weighted_memory": {
       "prediction": 2,
       "prediction_name": "2",
-      "prediction_confidence": 0.6291418075561523,
+      "prediction_confidence": 0.5625523924827576,
       "correct": true,
-      "memory_size": 13,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        987,
-        164,
-        1815,
-        617,
-        1829,
-        1130,
-        1714,
-        1783,
-        1074,
-        902,
-        523,
-        521,
-        262
+        987
       ],
       "memory_class_distribution": {
-        "2": 9,
-        "8": 1,
-        "3": 3
+        "2": 1
       },
-      "positive_memory_count": 13,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12
+        0
       ],
       "positive_memory_dataset_indices": [
-        987,
-        164,
-        1815,
-        617,
-        1829,
-        1130,
-        1714,
-        1783,
-        1074,
-        902,
-        523,
-        521,
-        262
+        987
       ],
       "positive_memory_class_distribution": {
-        "2": 9,
-        "8": 1,
-        "3": 3
+        "2": 1
       },
-      "true_class_count_in_memory": 9,
-      "true_class_count_in_positive_memory": 9,
-      "predicted_class_count_in_memory": 9,
-      "predicted_class_count_in_positive_memory": 9,
+      "true_class_count_in_memory": 1,
+      "true_class_count_in_positive_memory": 1,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -7500,39 +6359,7 @@
           "dataset_index": 987,
           "label": 2,
           "label_name": "2",
-          "weight": 0.1347910761833191
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 164,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.11114853620529175
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1815,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.10651975870132446
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 617,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.0948185920715332
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1829,
-          "label": 8,
-          "label_name": "8",
-          "weight": 0.08308148384094238
+          "weight": 1.0
         }
       ]
     },
@@ -7913,59 +6740,29 @@
     "top_weighted_memory": {
       "prediction": 2,
       "prediction_name": "2",
-      "prediction_confidence": 0.9895971417427063,
+      "prediction_confidence": 0.9802234172821045,
       "correct": false,
-      "memory_size": 11,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1988,
-        437,
-        1586,
-        983,
-        1166,
-        1844,
-        558,
-        1556,
-        481,
-        1846,
-        735
+        1988
       ],
       "memory_class_distribution": {
-        "2": 11
+        "2": 1
       },
-      "positive_memory_count": 11,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10
+        0
       ],
       "positive_memory_dataset_indices": [
-        1988,
-        437,
-        1586,
-        983,
-        1166,
-        1844,
-        558,
-        1556,
-        481,
-        1846,
-        735
+        1988
       ],
       "positive_memory_class_distribution": {
-        "2": 11
+        "2": 1
       },
       "true_class_count_in_memory": 0,
       "true_class_count_in_positive_memory": 0,
-      "predicted_class_count_in_memory": 11,
-      "predicted_class_count_in_positive_memory": 11,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -7973,39 +6770,7 @@
           "dataset_index": 1988,
           "label": 2,
           "label_name": "2",
-          "weight": 0.14700289070606232
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 437,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.14608807861804962
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1586,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.1238711029291153
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 983,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.11220104992389679
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1166,
-          "label": 2,
-          "label_name": "2",
-          "weight": 0.09255827963352203
+          "weight": 1.0
         }
       ]
     },
@@ -8381,52 +7146,29 @@
     "top_weighted_memory": {
       "prediction": 0,
       "prediction_name": "0",
-      "prediction_confidence": 0.9736756086349487,
+      "prediction_confidence": 0.9495282173156738,
       "correct": false,
-      "memory_size": 8,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        391,
-        1339,
-        1681,
-        1969,
-        494,
-        673,
-        642,
-        624
+        391
       ],
       "memory_class_distribution": {
-        "0": 7,
-        "6": 1
+        "0": 1
       },
-      "positive_memory_count": 8,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7
+        0
       ],
       "positive_memory_dataset_indices": [
-        391,
-        1339,
-        1681,
-        1969,
-        494,
-        673,
-        642,
-        624
+        391
       ],
       "positive_memory_class_distribution": {
-        "0": 7,
-        "6": 1
+        "0": 1
       },
       "true_class_count_in_memory": 0,
       "true_class_count_in_positive_memory": 0,
-      "predicted_class_count_in_memory": 7,
-      "predicted_class_count_in_positive_memory": 7,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -8434,39 +7176,7 @@
           "dataset_index": 391,
           "label": 0,
           "label_name": "0",
-          "weight": 0.21289372444152832
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1339,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.1952587366104126
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1681,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.19124072790145874
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1969,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.1584267020225525
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 494,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.14931005239486694
+          "weight": 1.0
         }
       ]
     },
@@ -8862,80 +7572,29 @@
     "top_weighted_memory": {
       "prediction": 4,
       "prediction_name": "4",
-      "prediction_confidence": 0.7205334305763245,
+      "prediction_confidence": 0.6554232835769653,
       "correct": false,
-      "memory_size": 16,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1651,
-        936,
-        1406,
-        1887,
-        1521,
-        1608,
-        1696,
-        1937,
-        874,
-        1025,
-        1542,
-        1770,
-        691,
-        599,
-        1052,
-        160
+        1651
       ],
       "memory_class_distribution": {
-        "9": 6,
-        "4": 5,
-        "8": 1,
-        "0": 4
+        "9": 1
       },
-      "positive_memory_count": 16,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15
+        0
       ],
       "positive_memory_dataset_indices": [
-        1651,
-        936,
-        1406,
-        1887,
-        1521,
-        1608,
-        1696,
-        1937,
-        874,
-        1025,
-        1542,
-        1770,
-        691,
-        599,
-        1052,
-        160
+        1651
       ],
       "positive_memory_class_distribution": {
-        "9": 6,
-        "4": 5,
-        "8": 1,
-        "0": 4
+        "9": 1
       },
       "true_class_count_in_memory": 0,
       "true_class_count_in_positive_memory": 0,
-      "predicted_class_count_in_memory": 5,
-      "predicted_class_count_in_positive_memory": 5,
+      "predicted_class_count_in_memory": 0,
+      "predicted_class_count_in_positive_memory": 0,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -8943,39 +7602,7 @@
           "dataset_index": 1651,
           "label": 9,
           "label_name": "9",
-          "weight": 0.13969314098358154
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 936,
-          "label": 4,
-          "label_name": "4",
-          "weight": 0.1057596206665039
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1406,
-          "label": 9,
-          "label_name": "9",
-          "weight": 0.104575514793396
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1887,
-          "label": 8,
-          "label_name": "8",
-          "weight": 0.08526396751403809
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1521,
-          "label": 0,
-          "label_name": "0",
-          "weight": 0.08069747686386108
+          "weight": 1.0
         }
       ]
     },
@@ -9374,80 +8001,29 @@
     "top_weighted_memory": {
       "prediction": 1,
       "prediction_name": "1",
-      "prediction_confidence": 0.8414233326911926,
+      "prediction_confidence": 0.9049286246299744,
       "correct": false,
-      "memory_size": 16,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        288,
-        1230,
-        593,
-        1903,
-        313,
-        1942,
-        904,
-        1477,
-        18,
-        1931,
-        1164,
-        42,
-        1983,
-        70,
-        332,
-        348
+        288
       ],
       "memory_class_distribution": {
-        "1": 9,
-        "3": 1,
-        "7": 4,
-        "2": 2
+        "1": 1
       },
-      "positive_memory_count": 16,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15
+        0
       ],
       "positive_memory_dataset_indices": [
-        288,
-        1230,
-        593,
-        1903,
-        313,
-        1942,
-        904,
-        1477,
-        18,
-        1931,
-        1164,
-        42,
-        1983,
-        70,
-        332,
-        348
+        288
       ],
       "positive_memory_class_distribution": {
-        "1": 9,
-        "3": 1,
-        "7": 4,
-        "2": 2
+        "1": 1
       },
-      "true_class_count_in_memory": 1,
-      "true_class_count_in_positive_memory": 1,
-      "predicted_class_count_in_memory": 9,
-      "predicted_class_count_in_positive_memory": 9,
+      "true_class_count_in_memory": 0,
+      "true_class_count_in_positive_memory": 0,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -9455,39 +8031,7 @@
           "dataset_index": 288,
           "label": 1,
           "label_name": "1",
-          "weight": 0.14647099375724792
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 1230,
-          "label": 1,
-          "label_name": "1",
-          "weight": 0.1361818015575409
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 593,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.11355814337730408
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1903,
-          "label": 1,
-          "label_name": "1",
-          "weight": 0.10426881909370422
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 313,
-          "label": 7,
-          "label_name": "7",
-          "weight": 0.09017840027809143
+          "weight": 1.0
         }
       ]
     },
@@ -9869,66 +8413,29 @@
     "top_weighted_memory": {
       "prediction": 3,
       "prediction_name": "3",
-      "prediction_confidence": 0.9976071119308472,
+      "prediction_confidence": 0.9933227896690369,
       "correct": false,
-      "memory_size": 12,
+      "memory_size": 1,
       "memory_dataset_indices": [
-        1294,
-        143,
-        1938,
-        1170,
-        1112,
-        1124,
-        32,
-        1842,
-        290,
-        1496,
-        1826,
-        1646
+        1294
       ],
       "memory_class_distribution": {
-        "3": 10,
-        "7": 1,
-        "1": 1
+        "3": 1
       },
-      "positive_memory_count": 12,
+      "positive_memory_count": 1,
       "positive_memory_local_indices": [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11
+        0
       ],
       "positive_memory_dataset_indices": [
-        1294,
-        143,
-        1938,
-        1170,
-        1112,
-        1124,
-        32,
-        1842,
-        290,
-        1496,
-        1826,
-        1646
+        1294
       ],
       "positive_memory_class_distribution": {
-        "3": 10,
-        "7": 1,
-        "1": 1
+        "3": 1
       },
       "true_class_count_in_memory": 0,
       "true_class_count_in_positive_memory": 0,
-      "predicted_class_count_in_memory": 10,
-      "predicted_class_count_in_positive_memory": 10,
+      "predicted_class_count_in_memory": 1,
+      "predicted_class_count_in_positive_memory": 1,
       "top_weighted_memory": [
         {
           "rank": 1,
@@ -9936,39 +8443,7 @@
           "dataset_index": 1294,
           "label": 3,
           "label_name": "3",
-          "weight": 0.1730121374130249
-        },
-        {
-          "rank": 2,
-          "local_index": 1,
-          "dataset_index": 143,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.1254923939704895
-        },
-        {
-          "rank": 3,
-          "local_index": 2,
-          "dataset_index": 1938,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.10841488838195801
-        },
-        {
-          "rank": 4,
-          "local_index": 3,
-          "dataset_index": 1170,
-          "label": 7,
-          "label_name": "7",
-          "weight": 0.09974777698516846
-        },
-        {
-          "rank": 5,
-          "local_index": 4,
-          "dataset_index": 1112,
-          "label": 3,
-          "label_name": "3",
-          "weight": 0.09823465347290039
+          "weight": 1.0
         }
       ]
     },

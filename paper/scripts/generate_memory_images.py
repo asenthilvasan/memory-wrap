@@ -25,7 +25,7 @@ absl.flags.DEFINE_list("image_indices", [], "Comma-separated list of test-set in
 absl.flags.DEFINE_integer("max_random_trials", 100, "Maximum number of random memory sets to test for each selected image")
 absl.flags.DEFINE_integer("random_seed", 0, "Seed used to sample memory sets")
 absl.flags.DEFINE_integer("memory_size", 5, "Memory-set size to evaluate. If 0, use the size stored in the checkpoint")
-absl.flags.DEFINE_integer("top_weighted_limit", 0, "Number of positively weighted memory images to keep for the top-weighted strategy. If 0, keep all positive-weighted images")
+absl.flags.DEFINE_integer("top_weighted_limit", 1, "Number of positively weighted memory images to keep for the top-weighted strategy. If 0, keep all positive-weighted images")
 absl.flags.mark_flag_as_required("path_model")
 
 FLAGS = absl.flags.FLAGS
@@ -289,7 +289,8 @@ def run(path:str,dataset_dir:str):
     if modality not in ['memory','encoder_memory']:
         raise ValueError(f'Model\'s modality (model type) must be one of [\'memory\',\'encoder_memory\'], not {modality}.')
     dataset_name = checkpoint['dataset_name']
-    model = utils.get_model( checkpoint['model_name'],checkpoint['num_classes'],model_type=modality)
+    memory_strategy = checkpoint.get('memory_strategy', 'none')
+    model = utils.get_model(checkpoint['model_name'], checkpoint['num_classes'], model_type=modality, memory_strategy=memory_strategy)
     model.load_state_dict(checkpoint['model_state_dict'])
     model = model.to(device)
     model.eval()

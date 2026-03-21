@@ -5,6 +5,7 @@ import random
 import torch 
 import numpy as np
 import torch.nn as nn
+from entmax import sparsemax
 from numpy.random import RandomState
 
 import utils.datasets as datasets
@@ -18,6 +19,7 @@ from architectures import wide_resnet
 
 
 _EPSILON = 1e-6
+VALID_MEMORY_STRATEGIES = {'none', 'top1'}
 
 
 def vector_distance(a:torch.Tensor , b:torch.Tensor, distance_type:str='cosine')->torch.Tensor:
@@ -59,6 +61,49 @@ def vector_distance(a:torch.Tensor , b:torch.Tensor, distance_type:str='cosine')
     return distance
 
 
+def _reduce_memory_weights(content_weights: torch.Tensor, memory_strategy: str) -> torch.Tensor:
+    if memory_strategy == 'none':
+        return content_weights
+    if memory_strategy == 'top1':
+        top_values, top_indices = torch.topk(content_weights, k=1, dim=1)
+        reduced_weights = torch.zeros_like(content_weights)
+        reduced_weights.scatter_(1, top_indices, top_values)
+        reduced_weights_sum = reduced_weights.sum(dim=1, keepdim=True).clamp_min(_EPSILON)
+        return reduced_weights / reduced_weights_sum
+    raise ValueError(f"memory_strategy must be one of {sorted(VALID_MEMORY_STRATEGIES)}, not {memory_strategy}.")
+
+
+def configure_memory_strategy(model: torch.nn.Module, memory_strategy: str = 'none') -> torch.nn.Module:
+    if memory_strategy not in VALID_MEMORY_STRATEGIES:
+        raise ValueError(f"memory_strategy must be one of {sorted(VALID_MEMORY_STRATEGIES)}, not {memory_strategy}.")
+    if memory_strategy == 'none' or not hasattr(model, 'mw'):
+        return model
+
+    memory_layer = model.mw
+    distance_type = getattr(memory_layer, 'distance_name', getattr(memory_layer, 'distance', 'cosine'))
+    use_encoder_output = hasattr(memory_layer, 'distance_name')
+
+    def forward_with_memory_strategy(encoder_output: torch.Tensor, memory_set: torch.Tensor, return_weights: bool = False):
+        dist = vector_distance(encoder_output, memory_set, distance_type)
+        content_weights = sparsemax(-dist, dim=1)
+        content_weights = _reduce_memory_weights(content_weights, memory_strategy)
+        memory_vector = torch.matmul(content_weights, memory_set)
+
+        if use_encoder_output:
+            final_input = torch.cat([encoder_output, memory_vector], 1)
+            output = memory_layer.classifier(final_input)
+        else:
+            output = memory_layer.classifier(memory_vector)
+
+        if return_weights:
+            return output, content_weights
+        return output
+
+    memory_layer.forward = forward_with_memory_strategy
+    memory_layer.memory_strategy = memory_strategy
+    return model
+
+
 def set_seed(seed: int) -> RandomState:
     """ Method to set seed across runs to ensure reproducibility.
     It fixes seed for single-gpu machines.
@@ -80,7 +125,7 @@ def set_seed(seed: int) -> RandomState:
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
     return random_state
 
-def get_model(model_name: str, num_classes:int , model_type:str) -> torch.nn.Module:
+def get_model(model_name: str, num_classes:int , model_type:str, memory_strategy: str='none') -> torch.nn.Module:
     """ Utility function to retrieve the requested model.
 
     Args:
@@ -160,7 +205,7 @@ def get_model(model_name: str, num_classes:int , model_type:str) -> torch.nn.Mod
         raise ValueError("Error: input model name is not valid!")
 
    
-    return model
+    return configure_memory_strategy(model, memory_strategy)
 
 def get_loaders(config: dict, seed: int=42, balanced:bool=False)-> List[torch.utils.data.DataLoader]:
     """ Retrieve the loaders (train, test, validation and memory) for

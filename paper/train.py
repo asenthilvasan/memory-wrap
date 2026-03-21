@@ -12,6 +12,7 @@ from typing import List
 
 # user flags
 absl.flags.DEFINE_string("modality", None, "std, memory or encoder_memory")
+absl.flags.DEFINE_string("memory_strategy", "none", "Memory selection strategy: none or top1")
 absl.flags.DEFINE_bool("continue_train", False, "std, memory or mlp")
 absl.flags.DEFINE_integer("log_interval",100,"Log interval between prints during training process")
 absl.flags.mark_flag_as_required("modality")
@@ -146,7 +147,10 @@ def run_experiment(config:dict,modality:str):
 
     # saving/loading stuff
     save = config['save']
-    path_saving_model = 'models/{}/{}/{}/{}/'.format(dataset_name,FLAGS.modality, config['model'],config['train_examples'])
+    memory_strategy = FLAGS.memory_strategy if modality in ['memory', 'encoder_memory'] else 'none'
+    path_saving_model = 'models/{}/{}/{}/{}/'.format(dataset_name, FLAGS.modality, config['model'], config['train_examples'])
+    if modality in ['memory', 'encoder_memory'] and memory_strategy != 'none':
+        path_saving_model = os.path.join(path_saving_model, memory_strategy, '')
     if save and not os.path.isdir(path_saving_model): 
         os.makedirs(path_saving_model)
     
@@ -169,7 +173,7 @@ def run_experiment(config:dict,modality:str):
     for run in range(initial_run,config['runs']):
         run_time = time.time()
         utils.set_seed(run)
-        model = utils.get_model(config['model'],num_classes,model_type=modality)
+        model = utils.get_model(config['model'], num_classes, model_type=modality, memory_strategy=memory_strategy)
         model = model.to(device)
         # training parameters
         optimizer = torch.optim.SGD(model.parameters(),**dict_optim)
@@ -213,7 +217,7 @@ def run_experiment(config:dict,modality:str):
             'train_examples': config['train_examples'],
             'mem_examples':  config[config['dataset_name']]['mem_examples'],
             'model_name': config['model'],
-            'num_classes': num_classes, 'modality':modality, 'dataset_name':config['dataset_name']} , save_path)
+            'num_classes': num_classes, 'modality':modality, 'dataset_name':config['dataset_name'], 'memory_strategy': memory_strategy} , save_path)
             info = {'run_num':run+1,'accuracies':run_acc}
             pickle.dump( info, open( path_saving_model+"conf.p", "wb" ) )
 
@@ -231,7 +235,7 @@ def main(argv):
     config_file = open(r'config/train.yaml')
     config = yaml.safe_load(config_file)
 
-    print("Model:{}\nSizeTrain:{}\n".format(config['model'], config['train_examples']))
+    print("Model:{}\nSizeTrain:{}\nMemoryStrategy:{}\n".format(config['model'], config['train_examples'], FLAGS.memory_strategy))
     run_experiment(config, FLAGS.modality)
 
 if __name__ == '__main__':

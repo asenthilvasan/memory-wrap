@@ -46,9 +46,10 @@ def run_experiment(path:str,dataset_dir:str):
         checkpoint = torch.load(os.path.join(path,name_model), map_location=device)
         #   load model
         modality = checkpoint['modality']
+        memory_strategy = checkpoint.get('memory_strategy', 'none')
 
         model_name = checkpoint['model_name']
-        model = utils.get_model(model_name,checkpoint['num_classes'],model_type=modality)
+        model = utils.get_model(model_name, checkpoint['num_classes'], model_type=modality, memory_strategy=memory_strategy)
         model.load_state_dict(checkpoint['model_state_dict'])
         model = model.to(device)
 

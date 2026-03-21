@@ -170,9 +170,10 @@ def run_proto_cf(path_models: str, path_aes: str, path_dataset: str):
         ####################################################
         checkpoint = torch.load(path_models+name_model)
         model_type = checkpoint['modality']
+        memory_strategy = checkpoint.get('memory_strategy', 'none')
         model = aux.get_model(
             checkpoint['model_name'], checkpoint['num_classes'],
-            model_type=model_type)
+            model_type=model_type, memory_strategy=memory_strategy)
         model.load_state_dict(checkpoint['model_state_dict'])
         model = model.cuda()
         model.eval()
