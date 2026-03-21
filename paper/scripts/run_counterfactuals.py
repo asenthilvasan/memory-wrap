@@ -189,10 +189,11 @@ def run_proto_cf(path_models: str, path_aes: str, path_dataset: str):
         # note that fulldataset_loader returns the full dataset
         # at each iteration
         dataset_size = checkpoint['train_examples']
+        use_balanced_memory = aux.uses_balanced_memory(memory_strategy)
         training_loader, _, test_loader, mem_loader = load_dataset(
             dataset_dir, batch_size_train=128, size_train=dataset_size,
             batch_size_test=64, batch_size_memory=checkpoint['mem_examples'],
-            seed=seed)
+            balanced=use_balanced_memory, seed=seed)
         # sanity check
         print("loaded model")
 

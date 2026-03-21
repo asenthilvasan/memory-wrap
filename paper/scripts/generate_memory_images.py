@@ -303,7 +303,8 @@ def run(path:str,dataset_dir:str):
     undo_normalization = getattr(datasets, 'undo_normalization_'+dataset_name)
     batch_size_test = FLAGS.batch_size_test
     memory_size = FLAGS.memory_size if FLAGS.memory_size > 0 else checkpoint['mem_examples']
-    _, _, test_loader, mem_loader = load_dataset(dataset_dir,batch_size_train=50, batch_size_test=batch_size_test,batch_size_memory=memory_size,size_train=train_examples)
+    use_balanced_memory = utils.uses_balanced_memory(memory_strategy)
+    _, _, test_loader, mem_loader = load_dataset(dataset_dir, batch_size_train=50, batch_size_test=batch_size_test, batch_size_memory=memory_size, size_train=train_examples, balanced=use_balanced_memory)
     ordered_test_loader = torch.utils.data.DataLoader(test_loader.dataset, batch_size=batch_size_test, pin_memory=True, shuffle=False)
     memory_dataset = mem_loader.dataset
     memory_dataset_labels = get_dataset_labels(memory_dataset)

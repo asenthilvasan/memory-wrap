@@ -57,7 +57,8 @@ def run_experiment(path:str,dataset_dir:str):
         mem_examples = checkpoint['mem_examples']
         train_examples = checkpoint['train_examples']
         load_dataset = getattr(datasets, 'get_'+checkpoint['dataset_name'])
-        _, _, test_loader, mem_loader = load_dataset(dataset_dir,batch_size_train=128, batch_size_test=500,batch_size_memory=mem_examples,size_train=train_examples,seed=run)
+        use_balanced_memory = utils.uses_balanced_memory(memory_strategy)
+        _, _, test_loader, mem_loader = load_dataset(dataset_dir, batch_size_train=128, batch_size_test=500, batch_size_memory=mem_examples, size_train=train_examples, balanced=use_balanced_memory, seed=run)
 
         if modality == 'memory' or modality == 'encoder_memory':
             cum_acc =  []

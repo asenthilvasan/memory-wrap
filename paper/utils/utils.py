@@ -19,7 +19,7 @@ from architectures import wide_resnet
 
 
 _EPSILON = 1e-6
-VALID_MEMORY_STRATEGIES = {'none', 'top1'}
+VALID_MEMORY_STRATEGIES = {'balanced', 'none', 'top1'}
 
 
 def vector_distance(a:torch.Tensor , b:torch.Tensor, distance_type:str='cosine')->torch.Tensor:
@@ -70,13 +70,21 @@ def _reduce_memory_weights(content_weights: torch.Tensor, memory_strategy: str) 
         reduced_weights.scatter_(1, top_indices, top_values)
         reduced_weights_sum = reduced_weights.sum(dim=1, keepdim=True).clamp_min(_EPSILON)
         return reduced_weights / reduced_weights_sum
+    if memory_strategy == 'balanced':
+        return content_weights
     raise ValueError(f"memory_strategy must be one of {sorted(VALID_MEMORY_STRATEGIES)}, not {memory_strategy}.")
+
+
+def uses_balanced_memory(memory_strategy: str) -> bool:
+    if memory_strategy not in VALID_MEMORY_STRATEGIES:
+        raise ValueError(f"memory_strategy must be one of {sorted(VALID_MEMORY_STRATEGIES)}, not {memory_strategy}.")
+    return memory_strategy == 'balanced'
 
 
 def configure_memory_strategy(model: torch.nn.Module, memory_strategy: str = 'none') -> torch.nn.Module:
     if memory_strategy not in VALID_MEMORY_STRATEGIES:
         raise ValueError(f"memory_strategy must be one of {sorted(VALID_MEMORY_STRATEGIES)}, not {memory_strategy}.")
-    if memory_strategy == 'none' or not hasattr(model, 'mw'):
+    if memory_strategy in {'balanced', 'none'} or not hasattr(model, 'mw'):
         return model
 
     memory_layer = model.mw
@@ -207,7 +215,7 @@ def get_model(model_name: str, num_classes:int , model_type:str, memory_strategy
    
     return configure_memory_strategy(model, memory_strategy)
 
-def get_loaders(config: dict, seed: int=42, balanced:bool=False)-> List[torch.utils.data.DataLoader]:
+def get_loaders(config: dict, seed: int=42, balanced:bool=False, memory_strategy: str='none')-> List[torch.utils.data.DataLoader]:
     """ Retrieve the loaders (train, test, validation and memory) for
         the given dataset
 
@@ -232,9 +240,9 @@ def get_loaders(config: dict, seed: int=42, balanced:bool=False)-> List[torch.ut
     if train_examples < batch_size_train:
         batch_size_train = train_examples
 
-    #load data
-    load_dataset = getattr(datasets, 'get_'+dataset, balanced)
-    loaders = load_dataset(data_dir,batch_size_train=batch_size_train, batch_size_test=batch_size_test,batch_size_memory=mem_examples,size_train=train_examples,seed=seed)
+    use_balanced_memory = balanced or uses_balanced_memory(memory_strategy)
+    load_dataset = getattr(datasets, 'get_'+dataset)
+    loaders = load_dataset(data_dir,batch_size_train=batch_size_train, batch_size_test=batch_size_test,batch_size_memory=mem_examples,size_train=train_examples,balanced=use_balanced_memory,seed=seed)
     return loaders
 
 

@@ -113,7 +113,8 @@ def run_evaluation(path:str,dataset_dir:str, num_runs:int=5):
         model = model.to(device)
 
         #load data
-        _, _, test_loader, mem_loader = load_dataset(dataset_dir,batch_size_train=checkpoint['train_examples'], batch_size_test=500,batch_size_memory=100)
+        use_balanced_memory = utils.uses_balanced_memory(memory_strategy)
+        _, _, test_loader, mem_loader = load_dataset(dataset_dir, batch_size_train=checkpoint['train_examples'], batch_size_test=500, batch_size_memory=100, balanced=use_balanced_memory)
         print("Loaded models:{}/{}".format(indx+1,len(list_models),end='\r'))
 
 

@@ -1,4 +1,3 @@
-
 import torch 
 import torchvision 
 import numpy
@@ -29,6 +28,62 @@ def make_weights_for_balanced_classes(images, nclasses):
         weight[idx] = weight_per_class[val[1]]                                  
     return weight
 
+def get_dataset_labels(dataset:torch.utils.data.Dataset)->List[int]:
+    if isinstance(dataset, torch.utils.data.Subset):
+        parent_labels = get_dataset_labels(dataset.dataset)
+        return [parent_labels[index] for index in dataset.indices]
+    if hasattr(dataset, 'labels'):
+        labels = dataset.labels
+    elif hasattr(dataset, 'targets'):
+        labels = dataset.targets
+    elif hasattr(dataset, 'samples'):
+        labels = [sample[1] for sample in dataset.samples]
+    else:
+        labels = [dataset[index][1] for index in range(len(dataset))]
+    if isinstance(labels, torch.Tensor):
+        labels = labels.tolist()
+    elif isinstance(labels, numpy.ndarray):
+        labels = labels.tolist()
+    return [int(label) for label in labels]
+
+class BalancedMemoryBatchSampler(torch.utils.data.Sampler[List[int]]):
+    def __init__(self, labels:List[int], batch_size:int, seed:int=42):
+        self.labels = labels
+        self.batch_size = batch_size
+        self.random = random.Random(seed)
+        self.class_ids = sorted(set(labels))
+        self.indices_by_class = {class_id: [] for class_id in self.class_ids}
+        for index, label in enumerate(labels):
+            self.indices_by_class[label].append(index)
+
+    def __iter__(self):
+        batch_count = len(self)
+        base_examples = self.batch_size // len(self.class_ids)
+        remainder = self.batch_size % len(self.class_ids)
+        for _ in range(batch_count):
+            batch = []
+            batch_classes = self.class_ids[:]
+            self.random.shuffle(batch_classes)
+            for class_position, class_id in enumerate(batch_classes):
+                samples_for_class = base_examples + (1 if class_position < remainder else 0)
+                class_indices = self.indices_by_class[class_id]
+                if samples_for_class <= len(class_indices):
+                    batch.extend(self.random.sample(class_indices, samples_for_class))
+                else:
+                    batch.extend(self.random.choices(class_indices, k=samples_for_class))
+            self.random.shuffle(batch)
+            yield batch
+
+    def __len__(self):
+        return max(1, len(self.labels) // self.batch_size)
+
+def build_memory_loader(dataset:torch.utils.data.Dataset, batch_size_memory:int, balanced:bool=False, seed:int=42)->torch.utils.data.DataLoader:
+    if balanced:
+        labels = get_dataset_labels(dataset)
+        batch_sampler = BalancedMemoryBatchSampler(labels, batch_size_memory, seed=seed)
+        return torch.utils.data.DataLoader(dataset, batch_sampler=batch_sampler, pin_memory=True, worker_init_fn=seed_worker)
+    return torch.utils.data.DataLoader(dataset, batch_size=batch_size_memory, pin_memory=True, shuffle=True, drop_last=True, worker_init_fn=seed_worker)
+
 class NormalizeInverse(torchvision.transforms.Normalize):
     """
     Undoes the normalization and returns the reconstructed images in the input domain.
@@ -43,7 +98,6 @@ class NormalizeInverse(torchvision.transforms.Normalize):
 
     def __call__(self, tensor):
         return super().__call__(tensor.clone())
-
 
 def undo_normalization_SVHN(input:torch.Tensor)->torch.Tensor:
     """Function to revert the normalization of an input image
@@ -90,7 +144,6 @@ def undo_normalization_CINIC10(input:torch.Tensor)->torch.Tensor:
     input = unnormalize(input)
     return input
 
-
 def split_dataset(dataset:torch.utils.data.Dataset,train_size:int,val_size:int,seed:int)->List[torch.utils.data.Dataset]:
     """ Function to split a dataset
     Args:
@@ -107,8 +160,6 @@ def split_dataset(dataset:torch.utils.data.Dataset,train_size:int,val_size:int,s
     size_train = min(len(data_rest),train_size)
     train_dataset, _ = torch.utils.data.random_split(data_rest,[size_train,len(data_rest)-size_train], generator=torch.Generator().manual_seed(seed))
     return train_dataset, val_dataset
-
-
 
 def get_SVHN(data_dir:str, batch_size_train:int, batch_size_test:int, batch_size_memory:int,
              size_train:int=100000, balanced:bool=False, seed:int=42) -> List[torch.utils.data.DataLoader]:
@@ -140,14 +191,7 @@ def get_SVHN(data_dir:str, batch_size_train:int, batch_size_test:int, batch_size
     test_data =  torchvision.datasets.SVHN(data_dir, split='test', download=True, transform=transforms)
     train_dataset, val_dataset = split_dataset(train_data,size_train,6000,seed)
 
-    if balanced:
-        # https://discuss.pytorch.org/t/balanced-sampling-between-classes-with-torchvision-dataloader/2703/3
-        weights = make_weights_for_balanced_classes(train_dataset, 10)                                                                
-        weights = torch.DoubleTensor(weights) 
-        sampler = torch.utils.data.sampler.WeightedRandomSampler(weights, len(weights),replacement=False)                     
-        mem_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size_memory, sampler = sampler, drop_last=True, pin_memory=True)     
-    else:
-        mem_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size_memory,pin_memory=True, shuffle=True, drop_last=True,worker_init_fn=seed_worker)
+    mem_loader = build_memory_loader(train_dataset, batch_size_memory, balanced=balanced, seed=seed)
     train_loader = torch.utils.data.DataLoader( train_dataset, batch_size=batch_size_train,pin_memory=True, shuffle=True, drop_last=True,worker_init_fn=seed_worker)
 
     val_loader = torch.utils.data.DataLoader( val_dataset, batch_size=batch_size_test,pin_memory=True, shuffle=False,worker_init_fn=seed_worker)
@@ -155,7 +199,6 @@ def get_SVHN(data_dir:str, batch_size_train:int, batch_size_test:int, batch_size
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size_test,pin_memory=True, shuffle=False,worker_init_fn=seed_worker)
 
     return train_loader,val_loader, test_loader, mem_loader
-
 
 def get_SVHN_dataset(data_dir:str, size_train:int=100000,seed:int=42)->List[torch.utils.data.DataLoader]:
     """ Function to retrieve SVHN dataset and dataloader
@@ -187,8 +230,7 @@ def get_SVHN_dataset(data_dir:str, size_train:int=100000,seed:int=42)->List[torc
     train_dataset, val_dataset = split_dataset(train_data,size_train,6000,seed)   
     return train_dataset,val_dataset, test_data
 
-
-def get_CIFAR10(data_dir:str, batch_size_train:int, batch_size_test:int,batch_size_memory:int,size_train:int=100000,seed:int=42)->List[torch.utils.data.DataLoader]:
+def get_CIFAR10(data_dir:str, batch_size_train:int, batch_size_test:int,batch_size_memory:int,size_train:int=100000, balanced:bool=False, seed:int=42)->List[torch.utils.data.DataLoader]:
     """ Function to retrieve CIFAR10 dataset and dataloader
 
     Args:
@@ -223,19 +265,21 @@ def get_CIFAR10(data_dir:str, batch_size_train:int, batch_size_test:int,batch_si
 
     train_dataset, val_dataset = split_dataset(train_data,size_train,6000,seed)
 
-
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size_train,pin_memory=True, shuffle=True, drop_last=True,worker_init_fn=seed_worker)
 
     val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=batch_size_test,pin_memory=True,worker_init_fn=seed_worker)
 
     test_loader = torch.utils.data.DataLoader(test_data, batch_size=batch_size_test,pin_memory=True,worker_init_fn=seed_worker)
 
-    mem_loader = torch.utils.data.DataLoader(memory_data, batch_size=batch_size_memory,pin_memory=True, shuffle=True, drop_last=True,worker_init_fn=seed_worker)
+    if balanced:
+        memory_dataset = torch.utils.data.Subset(memory_data, train_dataset.indices)
+        mem_loader = build_memory_loader(memory_dataset, batch_size_memory, balanced=True, seed=seed)
+    else:
+        mem_loader = torch.utils.data.DataLoader(memory_data, batch_size=batch_size_memory,pin_memory=True, shuffle=True, drop_last=True,worker_init_fn=seed_worker)
     
     return train_loader, val_loader, test_loader, mem_loader
 
-
-def get_CINIC10(data_dir:str, batch_size_train:int, batch_size_test:int,batch_size_memory:int,size_train:int=100000,seed:int=42)->List[torch.utils.data.DataLoader]:
+def get_CINIC10(data_dir:str, batch_size_train:int, batch_size_test:int,batch_size_memory:int,size_train:int=100000, balanced:bool=False, seed:int=42)->List[torch.utils.data.DataLoader]:
     """ Function to retrieve CINIC10 dataset and dataloader
 
     Args:
@@ -265,9 +309,7 @@ def get_CINIC10(data_dir:str, batch_size_train:int, batch_size_test:int,batch_si
     train_dataset,
     batch_size=batch_size_train, drop_last=True, shuffle=True)
 
-    mem_loader = torch.utils.data.DataLoader(train_dataset, 
-                 batch_size=batch_size_memory, drop_last=True,
-                 shuffle=True)
+    mem_loader = build_memory_loader(train_dataset, batch_size_memory, balanced=balanced, seed=seed)
 
     test_loader = torch.utils.data.DataLoader(
     torchvision.datasets.ImageFolder(cinic_directory + '/test',

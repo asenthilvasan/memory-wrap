@@ -177,7 +177,8 @@ def run(path:str,dataset_dir:str):
         name_classes = range(checkpoint['num_classes'])
     load_dataset = getattr(datasets, 'get_'+dataset_name)
     undo_normalization = getattr(datasets, 'undo_normalization_'+dataset_name)
-    _, _, test_loader, mem_loader = load_dataset(dataset_dir,batch_size_train=50, batch_size_test=batch_size_test,batch_size_memory=100,size_train=train_examples)
+    use_balanced_memory = utils.uses_balanced_memory(memory_strategy)
+    _, _, test_loader, mem_loader = load_dataset(dataset_dir, batch_size_train=50, batch_size_test=batch_size_test, batch_size_memory=100, size_train=train_examples, balanced=use_balanced_memory)
     memory_iter = iter(mem_loader)
     def get_image(image, revert_norm=True):
         if revert_norm:

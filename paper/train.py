@@ -12,9 +12,9 @@ from typing import List
 
 # user flags
 absl.flags.DEFINE_string("modality", None, "std, memory or encoder_memory")
-absl.flags.DEFINE_string("memory_strategy", "none", "Memory selection strategy: none or top1")
+absl.flags.DEFINE_string("memory_strategy", "none", "Memory selection strategy: none, top1 or balanced")
 absl.flags.DEFINE_bool("continue_train", False, "std, memory or mlp")
-absl.flags.DEFINE_integer("log_interval",100,"Log interval between prints during training process")
+absl.flags.DEFINE_integer("log_interval",5,"Log interval between prints during training process")
 absl.flags.mark_flag_as_required("modality")
 FLAGS = absl.flags.FLAGS
 
@@ -182,7 +182,7 @@ def run_experiment(config:dict,modality:str):
         else:
             scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,  milestones=opt_milestones)
         # get dataset
-        train_loader, _, test_loader, mem_loader = utils.get_loaders(config,run)
+        train_loader, _, test_loader, mem_loader = utils.get_loaders(config,run, memory_strategy=memory_strategy)
 
          # training process
         if modality == 'memory' or modality == 'encoder_memory':
