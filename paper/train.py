@@ -78,6 +78,9 @@ def train_memory_model(model:torch.nn.Module,loaders:List[torch.utils.data.DataL
                 100. * batch_idx / len(train_loader), len(train_loader.dataset)),end='\r')
 
         scheduler.step()# increase scheduler step for each epoch
+        # Per-epoch heartbeat for log tailing. flush=True ensures the line
+        # appears immediately when stdout is redirected to a file.
+        print(f'[memory] Epoch {epoch}/{num_epochs}  loss={loss.item():.4f}', flush=True)
 
     return model
 
@@ -124,6 +127,9 @@ def train_std_model(model:torch.nn.Module,train_loader:torch.utils.data.DataLoad
                 100. * batch_idx / len(train_loader), len(train_loader.dataset)),end='\r')
         
         scheduler.step() # increase scheduler step for each epoch
+        # Per-epoch heartbeat for log tailing. flush=True ensures the line
+        # appears immediately when stdout is redirected to a file.
+        print(f'[std] Epoch {epoch}/{num_epochs}  loss={loss.item():.4f}', flush=True)
 
     return model
 
@@ -244,7 +250,7 @@ def run_experiment(config:dict,modality:str):
             pickle.dump( info, open( path_saving_model+"conf.p", "wb" ) )
 
         # log
-        print("Run:{} | Best Loss:{:.4f} | Accuracy {:.2f} | Last Loss: Accuracy:| Mean Accuracy:{:.2f} | Std Dev Accuracy:{:.2f}\tT:{:.2f}min\tE:{:.2f}".format(run+1,best_loss,best_acc, np.mean(run_acc), np.std(run_acc),(train_time -run_time)/60,(end_eval_time -init_eval_time)/60))
+        print("Run:{} | Best Loss:{:.4f} | Accuracy {:.2f} | Last Loss: Accuracy:| Mean Accuracy:{:.2f} | Std Dev Accuracy:{:.2f}\tT:{:.2f}min\tE:{:.2f}".format(run+1,best_loss,best_acc, np.mean(run_acc), np.std(run_acc),(train_time -run_time)/60,(end_eval_time -init_eval_time)/60), flush=True)
 
 
 
