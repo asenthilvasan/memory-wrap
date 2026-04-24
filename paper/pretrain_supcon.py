@@ -307,7 +307,10 @@ def main(argv):
             scaler.update()
 
         sched.step()  # Cosine schedule steps once per epoch, not per batch.
-        print(f'Epoch {ep}/{FLAGS.epochs}  loss={loss.item():.4f}')
+        # flush=True: when stdout is redirected to a log file Python block-
+        # buffers to ~4KB, which with only ~30 chars per print would never
+        # flush during a 100-epoch run. Explicit flush keeps logs live.
+        print(f'Epoch {ep}/{FLAGS.epochs}  loss={loss.item():.4f}', flush=True)
 
     # --- Save checkpoint ----------------------------------------------------
     # Checkpoint format mirrors what train.py saves: model_name and
