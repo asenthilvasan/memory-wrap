@@ -7,16 +7,24 @@ Script to generate images containing the input and the samples in memory associa
 
 Command:
 ```
-python3 generate_memory_images.py --path_model=<PATH_MODEL> --dir_dataset='../datasets/'
+python3 generate_memory_images.py --path_model=<PATH_MODEL> --dir_dataset='../datasets/' [--max_images=<N>]
 ```
 - **path_model**: it is the path where the model is stored
 - **dir_dataset**: dir where datasets are stored
+- **max_images** *(optional, added in this fork)*: cap on the total number of test queries to render. `0` (default) renders every test image, which is ~26k on SVHN. Pass e.g. `--max_images=100` for quick qualitative comparisons across encoder variants. Queries are rendered in deterministic test-loader order, so query `i` always refers to the same image across runs.
 
 Images will be stored in the following path:
 ```
 images/mem_images/DATASET_NAME/MODALITY/MODEL_NAME/
 ```
 To modify the path, please edit the value of variable *dir_save*.
+
+> **Gotcha when comparing encoder variants.** All downstream runs save with
+> `modality='encoder_memory'` (regardless of whether the encoder was pretrained
+> with SupCon / SimCLR / Hybrid), so their retrieval images share the same
+> output directory and clobber each other. Rename the output dir between runs
+> before starting the next one. See `supcon_pipeline.md` \u00a75 for the exact
+> shell loop.
 ## Generate Heatmaps
 Script to generate heatmaps of images in the training dataset. Heatmaps are computed using the Integrated Gradient attribution method, using as a baseline a white image.
  <br>**Note:** Memory used to generate heatmaps is DIFFERENT from memory used to generate memory images of generate_memory_image.py scripts, due to different batch size the usage of two iterators on the same datasets (for heatmaps script).

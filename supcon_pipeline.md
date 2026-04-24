@@ -8,6 +8,33 @@ If you want the architectural walkthrough of Memory Wrap itself (the base
 paper's model), see `memory_wrap_walkthrough.md`. This document is
 complementary: it only covers the **contrastive pretraining additions**.
 
+## Credits & referenced repositories
+
+The contrastive-loss implementation and SimCLR-style augmentation recipe in
+`paper/pretrain_supcon.py` are closely modelled on the **official SupContrast
+repository** (Khosla et al., 2020):
+
+- **SupContrast (official)** — <https://github.com/HobbitLong/SupContrast>.
+  The `contrastive_loss` function in `paper/pretrain_supcon.py:116–185` is a
+  simplified rewrite of `losses.SupConLoss.forward` from that repo. It keeps
+  the same numerical-stability tricks (per-row max subtraction, log-sum-exp
+  over non-self samples, normalization by positive count) and unifies SupCon
+  and SimCLR into one function via the `labels=None` branch. The augmentation
+  pipeline (`RandomResizedCrop(32, scale=(0.2, 1.0))`, ColorJitter 0.4/0.4/0.4/0.1
+  at p=0.8, RandomGrayscale p=0.2, per-channel Normalize) is the same CIFAR-10
+  recipe used in `main_supcon.py` of that repo.
+- **SimCLR (official)** — <https://github.com/google-research/simclr> (TF)
+  and PyTorch reimplementation <https://github.com/sthalles/SimCLR> for
+  reference on NT-Xent and two-view augmentation design.
+- **Memory Wrap (base paper)** — <https://github.com/KRLGroup/memory-wrap>
+  (source of `memory.py` and the architectures in `paper/architectures/`).
+  Unchanged in this fork.
+
+Everything else in `paper/pretrain_supcon.py` (CLI flags, dataset specs,
+training loop, checkpoint format, k8s shared-memory and stdout-flush fixes)
+was written for this fork to plug the two reused pieces into the existing
+Memory Wrap training infrastructure.
+
 ---
 
 ## 1. What the pipeline does
@@ -70,8 +97,10 @@ also striking: std drops from 1.6% (scratch) to 0.1% (SupCon).
 | File | Lines changed | What changed |
 |---|---|---|
 | `paper/train.py` | ~15 | Two new flags: `--pretrained_encoder`, `--freeze_encoder`. Checkpoint-loading logic. Path suffix to keep per-variant runs separate. Per-epoch flushed prints. |
+| `paper/scripts/generate_memory_images.py` | +8 | New `--max_images` CLI flag to cap the number of test queries rendered (useful when doing qualitative comparison across variants without rendering all 26k SVHN test images). |
 | `paper/config/train.yaml` | 0 | No structural changes. You only edit this to switch `dataset_name: SVHN` ↔ `CIFAR10`. |
 | `deployment.yml` | +7 | Kubernetes `/dev/shm` tmpfs volume (cluster-specific, skip if not using the lab's k8s cluster). |
+| `.gitignore` | +1 | Added `memory_wrap_pilot/` so local SCP'd artifacts don't get committed. |
 
 That's it. The entire addition is a single new script plus ~15 lines touched
 in `train.py`. Everything else — the Memory Wrap core (`memory.py`), the
@@ -417,7 +446,9 @@ done
 
 `scripts/generate_memory_images.py` uses `checkpoint['modality']` to pick
 the save directory, but all four runs share `modality='encoder_memory'`
-— you must rename the output between runs:
+— you must rename the output between runs. Also pass `--max_images` to
+cap how many test queries get rendered (SVHN test has ~26k images; 100
+is plenty for qualitative comparison):
 
 ```bash
 cd paper/scripts/
@@ -426,12 +457,20 @@ for tag in '' _supcon _simclr _hybrid; do
     name=${name#_}
 
     python generate_memory_images.py \
-        --path_model=../models/SVHN/encoder_memory${tag}/mobilenet/2000/1.pt
+        --path_model=../models/SVHN/encoder_memory${tag}/mobilenet/2000/1.pt \
+        --max_images=100
 
     mv ../images/mem_images/SVHN/encoder_memory/mobilenet \
        ../images/mem_images/SVHN/encoder_memory_${name}_out
 done
 ```
+
+Note on query ordering: `--max_images=N` renders the **first N test queries
+in deterministic order** (the test loader uses `shuffle=False` in
+`paper/utils/datasets.py`). The memory candidates themselves are sampled
+randomly because the memory loader uses `shuffle=True`, but the memory
+seed is fixed per variant so cross-variant comparisons of query i always
+share the same query image.
 
 ---
 
@@ -621,13 +660,13 @@ Add an entry to `DATASET_SPECS` with:
 
 | File | Role |
 |---|---|
-| `paper/pretrain_supcon.py` | **New.** Self-contained contrastive pretraining script. ~330 lines. |
+| `paper/pretrain_supcon.py` | **New.** Self-contained contrastive pretraining script. ~330 lines. Loss function and augmentation recipe derived from <https://github.com/HobbitLong/SupContrast>. |
 | `paper/train.py` | **Modified.** Added `--pretrained_encoder`, `--freeze_encoder` flags + checkpoint loading + save-path suffix logic. ~15 lines changed. |
+| `paper/scripts/generate_memory_images.py` | **Modified.** Added `--max_images` CLI flag to cap number of rendered test queries. |
 | `paper/config/train.yaml` | **Unchanged structurally.** Only edit `dataset_name` to switch datasets, `runs` to control statistical robustness. |
 | `memory.py` | **Unchanged.** Core Memory Wrap (base paper). |
-| `paper/architectures/*.py` | **Unchanged.** Backbones with the three-variant pattern (std, memory, encoder_memory). |
+| `paper/architectures/*.py` | **Unchanged.** Backbones with the three-variant pattern (std, memory, encoder_memory). Taken from <https://github.com/kuangliu/pytorch-cifar> per the base paper. |
 | `paper/utils/*.py` | **Unchanged.** Model factory, data loaders, eval. |
-| `paper/scripts/generate_memory_images.py` | **Unchanged.** Generates visual retrieval comparisons (but has a gotcha — see §8). |
 | `memory_wrap_walkthrough.md` | Architectural walkthrough of Memory Wrap (base paper). |
 | `supcon_pipeline.md` | **This file.** The pretraining pipeline added on top. |
 | `deployment.yml` | Kubernetes deployment (lab-specific). |

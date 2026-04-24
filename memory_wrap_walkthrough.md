@@ -43,8 +43,8 @@ def forward(self, encoder_output, memory_set, return_weights=False):
 
 | Diagram block | Where it lives | What it does |
 |---|---|---|
-| **Input** (`x_i`) | `data` in `paper/train.py:49–54` — a mini-batch from `train_loader` | Current image(s) to classify. |
-| **Memory Set** (`S_i`) | `memory_input` from a *second* loader at `paper/train.py:55–56`; loader built in `paper/datasets.py:139` (`mem_loader`) | A random batch of training samples drawn fresh every step — the "memories of past training samples". |
+| **Input** (`x_i`) | `data` in `paper/train.py:55–59` — a mini-batch from `train_loader` | Current image(s) to classify. |
+| **Memory Set** (`S_i`) | `memory_input` from a *second* loader at `paper/train.py:61–62`; loader built in `paper/utils/datasets.py` (search for `mem_loader`, e.g. line 150 for CIFAR10, 233 for SVHN, 268 for CINIC10) | A random batch of training samples drawn fresh every step — the "memories of past training samples". |
 | **Encoder** (shared, pink block) | `forward_encoder()` in each backbone, e.g. `paper/architectures/mobilenet.py:113–123` | The usual CNN minus its last linear classifier. The **same `forward_encoder` is called twice** at `paper/architectures/mobilenet.py:125–133` — once on the input, once on the memory set — which is why the diagram shows a single encoder with two arrows. |
 | **Encoding Input** (`e_i = f(x_i)`) | `out = self.forward_encoder(x)` at `paper/architectures/mobilenet.py:128` | Feature vector `[b, encoder_output_dim]`. Passed as `encoder_output`. |
 | **Encoding Memory Set** (`E_{S_i}`) | `out_ss = self.forward_encoder(ss)` at `paper/architectures/mobilenet.py:129` | Feature matrix `[m, encoder_output_dim]`. Passed as `memory_set`. |
@@ -52,7 +52,7 @@ def forward(self, encoder_output, memory_set, return_weights=False):
 | **Memory Vector** (`v_{S_i}`) | `memory.py:111` | Weighted sum of memory encodings with the sparse weights. |
 | **⊕ (concat)** | `memory.py:114` | `torch.cat([encoder_output, memory_vector], 1)` — despite being drawn as ⊕ in the figure, this is a **concatenation**, not a sum (the paper states this explicitly in Eq. 4). |
 | **MLP** | `memory.py:53–69` (class `MLP`), instantiated as the `classifier` at `memory.py:87` | Two-layer perceptron `[2·d → 4·d → num_classes]` applied to the concatenation. Corresponds to the paper's last layer `l_f`. |
-| **Output** | `memory.py:115` (`output`) | Class logits. Cross-entropy loss applied in `paper/train.py:60–61`. |
+| **Output** | `memory.py:115` (`output`) | Class logits. Cross-entropy loss applied in `paper/train.py:66–67`. |
 
 ---
 
@@ -176,15 +176,17 @@ So inside the backbone files:
   `paper/architectures/mobilenet.py:157`.
 
 The training script dispatches between them with the `--modality` flag
-(`memory` = baseline, `encoder_memory` = Memory Wrap): `paper/train.py:184`.
+(`memory` = baseline, `encoder_memory` = Memory Wrap): `paper/train.py:216–217`
+(memory variants) and `paper/train.py:230–231` (standard model).
 
 ---
 
 ## Quick mental model for future modifications
 
 1. **Two independent `DataLoader`s:** one normal train loader, one "memory"
-   loader over the same training set (`paper/datasets.py:133, 139`). Every
-   training step samples a *fresh* random memory set.
+   loader over the same training set (see `paper/utils/datasets.py` — each
+   `get_*` function returns `train_loader, val_loader, test_loader, mem_loader`).
+   Every training step samples a *fresh* random memory set.
 2. **Encoder runs twice per step** — once on the input, once on the memory set
    — and both feature tensors are handed to `MemoryWrapLayer.forward`
    (`paper/architectures/mobilenet.py:128–132`).
@@ -441,8 +443,8 @@ encoder's training signal explicitly:
   class clusters. Biases retrieval toward **both visually similar AND
   same-class** memories.
 
-See `encoder_pretraining_design.md` for the deeper design discussion of why
-these (and not e.g. PIP-Net) are the natural first experiments.
+See `supcon_pipeline.md` for the full design discussion, code walkthrough,
+and pilot results on SVHN.
 
 ### What was added
 
@@ -571,4 +573,4 @@ add a sibling function.
 | `paper/architectures/*.py` | Backbone CNNs. Each defines a standard variant, `Memory*` variant (= baseline), and `EncoderMemory*` variant (= real Memory Wrap). |
 | `paper/utils/utils.py` | Model factory (`get_model`), eval loops, and data wiring. |
 | `paper/utils/counterfactuals_utils.py` | Explanation-by-example and counterfactual extraction using the sparse `content_weights`. |
-| `encoder_pretraining_design.md` | Design notes on SupCon vs PIP-Net and how to add other encoder-pretraining variants. |
+| `supcon_pipeline.md` | Full design notes + walkthrough of the SupCon/SimCLR/Hybrid contrastive pretraining pipeline added in this fork. |
