@@ -19,29 +19,35 @@ spec:
         k8s-app: assenthi-memwrap
     spec:
       nodeSelector:
-        nvidia.com/gpu.product: NVIDIA-L4
+        nvidia.com/gpu.product: NVIDIA-RTX-5000-Ada-Generation
       containers:
       - name: assenthi-memwrap
         image: pytorch/pytorch
         resources:
           limits:
-            memory: 100Gi
-            cpu: "16"
+            memory: 64Gi
+            cpu: "12"
             nvidia.com/gpu: "1"
           requests:
-            memory: 64Gi
+            memory: 32Gi
             cpu: "8"
             nvidia.com/gpu: "1"
         command: [ "sh", "-c", "sleep infinity" ]
         volumeMounts:
         - mountPath: /pvcvolume
           name: vol1
+        - mountPath: /dev/shm
+          name: dshm
         # - mountPath: /shapenet
         #   name: vol2
       volumes:
       - name: vol1
         persistentVolumeClaim:
           claimName: assenthi-memwrap
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 8Gi
       # - name: vol2
       #   persistentVolumeClaim:
       #     claimName: jonathan-shapenet

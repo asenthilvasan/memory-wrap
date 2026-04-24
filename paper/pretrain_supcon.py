@@ -34,6 +34,11 @@ import os
 # absl is used for CLI flags to match the convention in train.py.
 import absl.app, absl.flags
 import torch
+# Kubernetes pods default /dev/shm to 64MB, which is far too small for
+# PyTorch DataLoader's default shared-memory tensor sharing. Switching to
+# the 'file_system' strategy uses file descriptors instead and avoids the
+# "unable to allocate shared memory" error on constrained pods.
+torch.multiprocessing.set_sharing_strategy('file_system')
 # F provides L2 normalization (F.normalize); we need unit vectors because
 # SupCon works on cosine similarity = dot product of L2-normalized features.
 import torch.nn.functional as F
