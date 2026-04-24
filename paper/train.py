@@ -14,6 +14,12 @@ from typing import List
 absl.flags.DEFINE_string("modality", None, "std, memory or encoder_memory")
 absl.flags.DEFINE_bool("continue_train", False, "std, memory or mlp")
 absl.flags.DEFINE_integer("log_interval",100,"Log interval between prints during training process")
+absl.flags.DEFINE_string("pretrained_encoder", None,
+    "Optional path to a SupCon-pretrained encoder checkpoint (produced by pretrain_supcon.py). "
+    "If set, the encoder weights are loaded before training begins.")
+absl.flags.DEFINE_bool("freeze_encoder", False,
+    "If True, freeze all parameters except the Memory Wrap head (self.mw.*). "
+    "Typically used together with --pretrained_encoder to do linear-probe style training.")
 absl.flags.mark_flag_as_required("modality")
 FLAGS = absl.flags.FLAGS
 
@@ -146,7 +152,18 @@ def run_experiment(config:dict,modality:str):
 
     # saving/loading stuff
     save = config['save']
-    path_saving_model = 'models/{}/{}/{}/{}/'.format(dataset_name,FLAGS.modality, config['model'],config['train_examples'])
+    # Differentiate save dirs by which pretraining variant the encoder came
+    # from so supcon / simclr / CE-baseline runs don't clobber each other.
+    # Infer the tag from the pretrained checkpoint path (e.g. .../supcon/... -> '_supcon').
+    suffix = ''
+    if FLAGS.pretrained_encoder:
+        suffix = '_pretrained'
+        for tag in ('supcon', 'simclr', 'hybrid'):
+            if f'/{tag}/' in FLAGS.pretrained_encoder:
+                suffix = f'_{tag}'
+                break
+    modality_dir = FLAGS.modality + suffix
+    path_saving_model = 'models/{}/{}/{}/{}/'.format(dataset_name,modality_dir, config['model'],config['train_examples'])
     if save and not os.path.isdir(path_saving_model): 
         os.makedirs(path_saving_model)
     
@@ -171,8 +188,17 @@ def run_experiment(config:dict,modality:str):
         utils.set_seed(run)
         model = utils.get_model(config['model'],num_classes,model_type=modality)
         model = model.to(device)
+
+        # Optional SupCon-pretrained encoder + optional freeze (linear probe).
+        if FLAGS.pretrained_encoder:
+            ckpt = torch.load(FLAGS.pretrained_encoder, map_location=device)
+            model.load_state_dict(ckpt['model_state_dict'], strict=False)
+        if FLAGS.freeze_encoder:
+            for n, p in model.named_parameters():
+                if not n.startswith('mw.'): p.requires_grad_(False)
+
         # training parameters
-        optimizer = torch.optim.SGD(model.parameters(),**dict_optim)
+        optimizer = torch.optim.SGD([p for p in model.parameters() if p.requires_grad],**dict_optim)
         if dataset_name == 'CINIC10':
              scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config[dataset_name]['num_epochs'])
         else:
