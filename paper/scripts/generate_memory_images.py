@@ -14,6 +14,10 @@ import utils.utils as utils
 absl.flags.DEFINE_string("path_model", None, "Path of the trained model")
 absl.flags.DEFINE_integer("batch_size_test", 3, "Number of samples for each image")
 absl.flags.DEFINE_string("dir_dataset", '../datasets/', "dir path where datasets are stored")
+# Upper bound on test images to generate. SVHN test has 26k images which is
+# far more than needed for qualitative comparison. 0 = no limit (original behaviour).
+absl.flags.DEFINE_integer("max_images", 0,
+    "Max test images to render (0 = all). Stops after floor(max_images/batch_size_test) batches.")
 absl.flags.mark_flag_as_required("path_model")
 
 FLAGS = absl.flags.FLAGS
@@ -70,7 +74,12 @@ def run(path:str,dataset_dir:str):
         return transformed_im
 
 
+    # Optional early-stop if --max_images was set. int division so we always
+    # render complete batches (no truncated final batch).
+    max_batches = FLAGS.max_images // FLAGS.batch_size_test if FLAGS.max_images > 0 else None
     for batch_idx, (images, _) in enumerate(test_loader):
+        if max_batches is not None and batch_idx >= max_batches:
+            break
         print("Batch:{}/{}".format(batch_idx, len(test_loader)), end='\r')
         try:
             memory, _ = next(memory_iter)
