@@ -78,6 +78,11 @@ absl.flags.DEFINE_string('data_dir', 'datasets', 'Dataset directory')
 # because flipped digits aren't digits.
 absl.flags.DEFINE_enum('dataset', 'CIFAR10', ['CIFAR10', 'SVHN'],
                        'Dataset to pretrain on.')
+# Data loading parallelism. With 2-view augmentation this pipeline is
+# CPU-bound (each batch needs 2B independent RandomResizedCrop+ColorJitter
+# passes). On a modern GPU (L4/L40/A100/H100) the default of 4 workers
+# typically starves the GPU; 8-16 is a better starting point.
+absl.flags.DEFINE_integer('num_workers', 8, 'DataLoader worker processes')
 FLAGS = absl.flags.FLAGS
 
 
@@ -190,6 +195,10 @@ class TwoViews:
 
 def main(argv):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # Input shape is fixed (32x32, constant batch size thanks to drop_last),
+    # so let cuDNN benchmark kernels at startup and pick the fastest for
+    # each conv. Free ~5-15% speedup on conv-heavy backbones.
+    torch.backends.cudnn.benchmark = True
     spec = DATASET_SPECS[FLAGS.dataset]
 
     # --- Augmentation pipeline ----------------------------------------------
@@ -223,8 +232,14 @@ def main(argv):
                      transform=TwoViews(aug), **spec['split_kwargs'])
     # drop_last=True: SupCon needs a predictable 2B batch shape; dropping
     # the incomplete final batch avoids per-epoch shape edge cases.
+    # persistent_workers=True: don't tear down and respawn worker processes
+    #   between epochs (saves ~1-2s of Python startup per epoch).
+    # prefetch_factor=4: each worker keeps 4 batches queued ahead of the
+    #   GPU, hiding CPU augmentation latency behind GPU compute.
     loader = torch.utils.data.DataLoader(ds, batch_size=FLAGS.batch_size,
-        shuffle=True, drop_last=True, pin_memory=True, num_workers=4)
+        shuffle=True, drop_last=True, pin_memory=True,
+        num_workers=FLAGS.num_workers, persistent_workers=FLAGS.num_workers > 0,
+        prefetch_factor=4 if FLAGS.num_workers > 0 else None)
 
     # --- Model --------------------------------------------------------------
     # We instantiate the 'encoder_memory' variant (= real Memory Wrap) so we
