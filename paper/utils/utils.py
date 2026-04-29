@@ -213,11 +213,22 @@ def eval_memory(model:torch.nn.Module,loader:torch.utils.data.DataLoader,mem_loa
     model.eval()
     test_loss = 0.0
     correct = 0
+    # Create the mem_loader iterator ONCE, not per-batch. The original code
+    # called `next(iter(mem_loader))` inside the loop, which respawned every
+    # DataLoader worker process on every test batch. On a slow FUSE
+    # filesystem that hangs multiprocessing's tempfile IPC. Caching the
+    # iterator and recycling it when exhausted avoids both overheads and
+    # preserves the "fresh random memory batch per query batch" semantics.
+    mem_iter = iter(mem_loader)
     with torch.no_grad():
         for _, (data, target) in enumerate(loader):
             data = data.to(device)
             target = target.to(device)
-            memory, _ = next(iter(mem_loader))
+            try:
+                memory, _ = next(mem_iter)
+            except StopIteration:
+                mem_iter = iter(mem_loader)
+                memory, _ = next(mem_iter)
             memory = memory.to(device)
 
             output  = model(data,memory)
