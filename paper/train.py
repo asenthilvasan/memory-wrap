@@ -11,6 +11,8 @@ import pickle
 from typing import List
 
 # user flags
+torch.multiprocessing.set_sharing_strategy('file_system')
+
 absl.flags.DEFINE_string("modality", None, "std, memory or encoder_memory")
 absl.flags.DEFINE_bool("continue_train", False, "std, memory or mlp")
 absl.flags.DEFINE_integer("log_interval",100,"Log interval between prints during training process")
