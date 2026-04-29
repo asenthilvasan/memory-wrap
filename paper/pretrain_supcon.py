@@ -81,7 +81,7 @@ absl.flags.DEFINE_string('data_dir', 'datasets', 'Dataset directory')
 # augmentation recipe and backbone architectures work for either, but they
 # need different normalization stats and (for SVHN) no horizontal flip
 # because flipped digits aren't digits.
-absl.flags.DEFINE_enum('dataset', 'CIFAR10', ['CIFAR10', 'SVHN'],
+absl.flags.DEFINE_enum('dataset', 'CIFAR10', ['CIFAR10', 'SVHN', 'CINIC10'],
                        'Dataset to pretrain on.')
 # Data loading parallelism. With 2-view augmentation this pipeline is
 # CPU-bound (each batch needs 2B independent RandomResizedCrop+ColorJitter
@@ -109,6 +109,16 @@ DATASET_SPECS = {
         'mean': [0.485, 0.456, 0.406],   # matches paper/utils/datasets.py get_SVHN
         'std':  [0.229, 0.224, 0.225],
         'hflip': False,  # '3' flipped is not a '3'
+    },
+    'CINIC10': {
+        # CINIC-10 is distributed as plain image folders (not a torchvision
+        # dataset class), so we load it via datasets.ImageFolder rooted at
+        # <data_dir>/CINIC10/train. The user must download/extract the
+        # tarball manually before running this script (see plan Step 1).
+        'imagefolder_subdir': 'CINIC10/train',
+        'mean': [0.47889522, 0.47227842, 0.43047404],  # matches paper/utils/datasets.py get_CINIC10
+        'std':  [0.24205776, 0.23828046, 0.25874835],
+        'hflip': True,   # CIFAR-10-style natural images, symmetric
     },
 }
 
@@ -233,8 +243,14 @@ def main(argv):
     aug = transforms.Compose(aug_list)
 
     # Dataset returns ((view1, view2), label) per sample thanks to TwoViews.
-    ds = spec['cls'](FLAGS.data_dir, download=True,
-                     transform=TwoViews(aug), **spec['split_kwargs'])
+    # CINIC-10 uses ImageFolder (no torchvision auto-download); CIFAR-10/SVHN
+    # use their torchvision dataset class with download=True.
+    if 'imagefolder_subdir' in spec:
+        ds = datasets.ImageFolder(os.path.join(FLAGS.data_dir, spec['imagefolder_subdir']),
+                                  transform=TwoViews(aug))
+    else:
+        ds = spec['cls'](FLAGS.data_dir, download=True,
+                         transform=TwoViews(aug), **spec['split_kwargs'])
     # drop_last=True: SupCon needs a predictable 2B batch shape; dropping
     # the incomplete final batch avoids per-epoch shape edge cases.
     # persistent_workers=True: don't tear down and respawn worker processes

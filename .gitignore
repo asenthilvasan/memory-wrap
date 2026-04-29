@@ -6,4 +6,4 @@ core
 *.pyc
 .vscode/
 paper/datasets/
-memory_wrap_pilot
+memory_wrap_cont_*
