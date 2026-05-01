@@ -16,6 +16,11 @@ import captum.attr # type: ignore
 absl.flags.DEFINE_string("path_model", None, "Path of the trained model")
 absl.flags.DEFINE_string("dir_dataset", '../datasets/', "dir path where datasets are stored")
 absl.flags.DEFINE_integer("batch_size_test", 1, "Number of samples for each image")
+# Upper bound on test images to render. Heatmaps are slow (IntegratedGradients
+# with 40 steps per image), so the default is to render the full test set only
+# when 0 is passed. For qualitative comparison a few hundred is enough.
+absl.flags.DEFINE_integer("max_images", 0,
+    "Max test images to render (0 = all). Stops after floor(max_images/batch_size_test) batches.")
 absl.flags.mark_flag_as_required("path_model")
 
 FLAGS = absl.flags.FLAGS
@@ -197,7 +202,12 @@ def run(path:str,dataset_dir:str):
     show_grad = "positive"
     type_viz = "blended_heat_map"
 
+    # Optional early-stop if --max_images was set. int division so we always
+    # render complete batches (no truncated final batch).
+    max_batches = FLAGS.max_images // FLAGS.batch_size_test if FLAGS.max_images > 0 else None
     for batch_idx, (images, _) in enumerate(test_loader):
+        if max_batches is not None and batch_idx >= max_batches:
+            break
         try:
             memory, _ = next(memory_iter)
         except StopIteration:
