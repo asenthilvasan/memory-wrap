@@ -117,16 +117,10 @@ def visualize_image_mult_attr(
         image = original_image[row]
         column = int(i%el_4cols)
         if attr[i] is None:
-            meth = "original_image"
-            captum.attr.visualization.visualize_image_attr(
-            attr[i],
-            original_image=image,
-            method=meth,
-            sign=sign,
-            plt_fig_axis=(plt_fig, plt_axis[row][column]),
-            use_pyplot=False,
-            title=titles[i] if titles else None,
-        )
+            plt_axis[row][column].imshow(image)
+            plt_axis[row][column].axis("off")
+            if titles:
+                plt_axis[row][column].set_title(titles[i])
         else:
             meth = method
             captum.attr.visualization.visualize_image_attr(

@@ -18,6 +18,8 @@ absl.flags.DEFINE_string("dir_dataset", '../datasets/', "dir path where datasets
 # far more than needed for qualitative comparison. 0 = no limit (original behaviour).
 absl.flags.DEFINE_integer("max_images", 0,
     "Max test images to render (0 = all). Stops after floor(max_images/batch_size_test) batches.")
+absl.flags.DEFINE_bool("shuffle_test", True, "Shuffle test images before rendering.")
+absl.flags.DEFINE_integer("seed", 42, "Random seed for shuffled visualization sampling.")
 absl.flags.mark_flag_as_required("path_model")
 
 FLAGS = absl.flags.FLAGS
@@ -57,6 +59,14 @@ def run(path:str,dataset_dir:str):
     undo_normalization = getattr(datasets, 'undo_normalization_'+dataset_name)
     batch_size_test = FLAGS.batch_size_test
     _, _, test_loader, mem_loader = load_dataset(dataset_dir,batch_size_train=50, batch_size_test=batch_size_test,batch_size_memory=100,size_train=train_examples)
+    if FLAGS.shuffle_test:
+        generator = torch.Generator()
+        generator.manual_seed(FLAGS.seed)
+        test_loader = torch.utils.data.DataLoader(
+            test_loader.dataset,
+            batch_size=batch_size_test,
+            shuffle=True,
+            generator=generator)
     memory_iter = iter(mem_loader)
     
     #saving stuff
