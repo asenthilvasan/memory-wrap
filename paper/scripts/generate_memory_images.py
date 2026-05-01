@@ -70,7 +70,13 @@ def run(path:str,dataset_dir:str):
     memory_iter = iter(mem_loader)
     
     #saving stuff
-    dir_save = "../images/mem_images/"+dataset_name+"/"+modality+"/" + checkpoint['model_name'] + "/"
+    path_parts = os.path.normpath(path).split(os.sep)
+    variant_name = modality
+    if dataset_name in path_parts:
+        dataset_idx = path_parts.index(dataset_name)
+        if dataset_idx + 1 < len(path_parts):
+            variant_name = path_parts[dataset_idx + 1]
+    dir_save = "../images/mem_images/"+dataset_name+"/"+variant_name+"/" + checkpoint['model_name'] + "/"
     if not os.path.isdir(dir_save): 
         os.makedirs(dir_save)
 

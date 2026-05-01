@@ -21,6 +21,8 @@ absl.flags.DEFINE_integer("batch_size_test", 1, "Number of samples for each imag
 # when 0 is passed. For qualitative comparison a few hundred is enough.
 absl.flags.DEFINE_integer("max_images", 0,
     "Max test images to render (0 = all). Stops after floor(max_images/batch_size_test) batches.")
+absl.flags.DEFINE_bool("shuffle_test", True, "Shuffle test images before rendering.")
+absl.flags.DEFINE_integer("seed", 42, "Random seed for shuffled visualization sampling.")
 absl.flags.mark_flag_as_required("path_model")
 
 FLAGS = absl.flags.FLAGS
@@ -176,6 +178,14 @@ def run(path:str,dataset_dir:str):
     load_dataset = getattr(datasets, 'get_'+dataset_name)
     undo_normalization = getattr(datasets, 'undo_normalization_'+dataset_name)
     _, _, test_loader, mem_loader = load_dataset(dataset_dir,batch_size_train=50, batch_size_test=batch_size_test,batch_size_memory=100,size_train=train_examples)
+    if FLAGS.shuffle_test:
+        generator = torch.Generator()
+        generator.manual_seed(FLAGS.seed)
+        test_loader = torch.utils.data.DataLoader(
+            test_loader.dataset,
+            batch_size=batch_size_test,
+            shuffle=True,
+            generator=generator)
     memory_iter = iter(mem_loader)
     def get_image(image, revert_norm=True):
         if revert_norm:
@@ -187,7 +197,13 @@ def run(path:str,dataset_dir:str):
         return transformed_im
 
     #saving stuff
-    dir_save = "../images/saliency/"+dataset_name+"/"+modality+"/" + checkpoint['model_name'] + "/"
+    path_parts = os.path.normpath(path).split(os.sep)
+    variant_name = modality
+    if dataset_name in path_parts:
+        dataset_idx = path_parts.index(dataset_name)
+        if dataset_idx + 1 < len(path_parts):
+            variant_name = path_parts[dataset_idx + 1]
+    dir_save = "../images/saliency/"+dataset_name+"/"+variant_name+"/" + checkpoint['model_name'] + "/"
     if not os.path.isdir(dir_save): 
         os.makedirs(dir_save)
 
