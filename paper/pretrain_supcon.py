@@ -25,6 +25,9 @@ Usage:
     # Same-data-budget pretraining: only see the 2000 images the downstream
     # Memory Wrap stage will see (matches config/train.yaml train_examples).
     python pretrain_supcon.py --train_examples=2000 --seed=1
+    # Disable the 2-layer MLP projection head (legacy / ablation behaviour:
+    # apply contrastive loss directly to encoder features). Default is 128.
+    python pretrain_supcon.py --projection_dim=0
 
 Output: models/<dataset>/{supcon,simclr,hybrid}/<model>/<train_examples or "full">/1.pt
 
@@ -116,6 +119,20 @@ absl.flags.DEFINE_integer('train_examples', 0,
 absl.flags.DEFINE_integer('seed', 42,
     'Seed for the train/val split. Set equal to the downstream run index '
     '(1..runs) so the pretrain subset matches that run exactly.')
+# Output dimension of the 2-layer MLP projection head applied on top of the
+# encoder during pretraining. Standard SupCon/SimCLR practice (Khosla 2020,
+# Chen 2020): apply the contrastive loss to the projection's output, NOT
+# directly to the encoder features. The projection head absorbs the
+# augmentation-invariance pressure of the contrastive loss so the encoder
+# features `z = forward_encoder(x)` retain richer information for downstream
+# tasks. The projection head is DISCARDED at checkpoint time --- only the
+# encoder state_dict is saved, so downstream train.py is unchanged.
+# Set to 0 to disable the projection head entirely (legacy behaviour, useful
+# for ablation: "does the projection head matter for our setup?").
+absl.flags.DEFINE_integer('projection_dim', 128,
+    'Output dim of the 2-layer MLP projection head used during pretraining. '
+    '128 = SupCon/SimCLR default. 0 = disable (apply loss directly to '
+    'encoder features, legacy behaviour).')
 FLAGS = absl.flags.FLAGS
 
 
@@ -318,10 +335,44 @@ def main(argv):
     # it anyway (or ignores those keys if the modality differs).
     model = utils.get_model(FLAGS.model, 10, model_type='encoder_memory').to(device)
 
+    # --- Projection head ----------------------------------------------------
+    # Standard SupCon/SimCLR recipe: contrastive loss is applied to a small
+    # MLP on top of the encoder, not to the encoder output directly. The MLP
+    # absorbs augmentation-invariance pressure so encoder features stay rich
+    # for downstream use. Discarded at save time.
+    #
+    # We probe the encoder's output dim with a dummy forward pass so the head
+    # adapts to any backbone (mobilenet=1280, resnet18=512, googlenet=1024,
+    # densenet=342, ...). Done in eval() to avoid touching BN running stats.
+    if FLAGS.projection_dim > 0:
+        model.eval()
+        with torch.no_grad():
+            dummy = torch.zeros(2, 3, 32, 32, device=device)
+            enc_dim = model.forward_encoder(dummy).shape[1]
+        model.train()
+        # 2-layer MLP: (enc_dim -> enc_dim -> projection_dim). Hidden width
+        # equal to encoder dim follows the SupCon paper's recipe.
+        projection = torch.nn.Sequential(
+            torch.nn.Linear(enc_dim, enc_dim),
+            torch.nn.ReLU(inplace=True),
+            torch.nn.Linear(enc_dim, FLAGS.projection_dim),
+        ).to(device)
+        print(f'Projection head: {enc_dim} -> {enc_dim} -> {FLAGS.projection_dim} '
+              f'(applied during pretraining only; discarded at save time).',
+              flush=True)
+    else:
+        # Legacy / ablation: identity head. Loss applied directly to encoder.
+        projection = torch.nn.Identity().to(device)
+        print('Projection head: DISABLED (--projection_dim=0). '
+              'Loss applied directly to encoder features.', flush=True)
+
     # SGD + momentum + weight decay matches the SupCon paper's recipe for
-    # CIFAR-10. Nesterov gives a small convergence boost on this setup.
-    opt = torch.optim.SGD(model.parameters(), lr=FLAGS.lr, momentum=0.9,
-                          weight_decay=1e-4, nesterov=True)
+    # CIFAR-10. Nesterov gives a small convergence boost on this setup. The
+    # projection head must be optimized jointly with the encoder; for
+    # nn.Identity this is a no-op (no parameters).
+    opt = torch.optim.SGD(
+        list(model.parameters()) + list(projection.parameters()),
+        lr=FLAGS.lr, momentum=0.9, weight_decay=1e-4, nesterov=True)
     # Cosine schedule: smoothly anneals LR from `lr` to 0 over all epochs.
     # Empirically better than step schedules for contrastive pretraining.
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=FLAGS.epochs)
@@ -344,10 +395,11 @@ def main(argv):
 
             opt.zero_grad()
             with torch.cuda.amp.autocast():
-                # forward_encoder returns [2B, d] raw features. F.normalize
-                # projects them onto the unit hypersphere so matmul later =
-                # cosine similarity.
-                feat = F.normalize(model.forward_encoder(imgs), dim=1)
+                # forward_encoder returns [2B, enc_dim] raw features. The
+                # projection head (Identity if disabled) maps these to
+                # [2B, projection_dim]. F.normalize then projects onto the
+                # unit hypersphere so matmul later = cosine similarity.
+                feat = F.normalize(projection(model.forward_encoder(imgs)), dim=1)
                 # SupCon: pass labels. SimCLR: pass None. Hybrid: both,
                 # combined as alpha * supcon + (1 - alpha) * simclr.
                 if FLAGS.loss == 'supcon':
