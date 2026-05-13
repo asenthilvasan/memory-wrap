@@ -16,18 +16,21 @@ pairs the loss considers positive. The downstream effect is in Memory
 Wrap's `sparsemax(cos(encoder(query), encoder(memory_i)))` attention.
 
 Usage:
-    python pretrain_supcon.py                        # CIFAR10, supcon, mobilenet
+    python pretrain_supcon.py                        # CIFAR10, supcon, mobilenet, FULL dataset
     python pretrain_supcon.py --dataset=SVHN         # SVHN instead of CIFAR10
     python pretrain_supcon.py --loss=simclr          # SimCLR (no labels)
     python pretrain_supcon.py --loss=hybrid          # SupCon + SimCLR (50/50)
     python pretrain_supcon.py --loss=hybrid --hybrid_alpha=0.7  # 70% supcon
     python pretrain_supcon.py --model=resnet18 --epochs=200
+    # Same-data-budget pretraining: only see the 2000 images the downstream
+    # Memory Wrap stage will see (matches config/train.yaml train_examples).
+    python pretrain_supcon.py --train_examples=2000 --seed=1
 
-Output: models/<dataset>/{supcon,simclr,hybrid}/<model>/1.pt
+Output: models/<dataset>/{supcon,simclr,hybrid}/<model>/<train_examples or "full">/1.pt
 
 Plug the checkpoint into downstream Memory Wrap training via:
     python train.py --modality=encoder_memory \\
-        --pretrained_encoder=models/<dataset>/<loss>/<model>/1.pt \\
+        --pretrained_encoder=models/<dataset>/<loss>/<model>/<budget>/1.pt \\
         --freeze_encoder=True
 """
 import os
@@ -46,6 +49,13 @@ from torchvision import datasets, transforms
 # Reuse the existing model factory so SupCon-pretrained checkpoints use the
 # exact same backbone as downstream Memory Wrap training.
 import utils.utils as utils
+# split_dataset implements the exact same seeded random_split used by the
+# downstream Memory Wrap training pipeline (paper/utils/datasets.py). Reusing
+# it here — with the same seed and per-dataset val_size — guarantees that
+# when --train_examples matches config/train.yaml's train_examples, the
+# pretraining sees the EXACT SAME image indices as downstream, i.e. a fair
+# same-data-budget comparison instead of pretraining on the full dataset.
+from utils.datasets import split_dataset
 
 
 # --- CLI flags ---------------------------------------------------------------
@@ -88,7 +98,32 @@ absl.flags.DEFINE_enum('dataset', 'CIFAR10', ['CIFAR10', 'SVHN', 'CINIC10'],
 # passes). On a modern GPU (L4/L40/A100/H100) the default of 4 workers
 # typically starves the GPU; 8-16 is a better starting point.
 absl.flags.DEFINE_integer('num_workers', 8, 'DataLoader worker processes')
+# Same-data-budget control. Default 0 means "use the full training set"
+# (legacy behaviour). Set this to the same value as config/train.yaml's
+# `train_examples` (e.g. 2000) to pretrain on exactly the same subset of
+# images that downstream Memory Wrap training will see — this is the fair
+# comparison when reporting "pretrained encoder + 2000-sample Memory Wrap"
+# vs "scratch encoder + 2000-sample Memory Wrap": both stages then share
+# the same data budget instead of letting pretraining cheat with 50k images.
+absl.flags.DEFINE_integer('train_examples', 0,
+    'Subset size to pretrain on (0 = full dataset). Match config/train.yaml '
+    'train_examples for a same-data-budget comparison with downstream.')
+# Seed controls which images end up in the subset. Must match downstream's
+# seed (train.py iterates runs 1..N and passes seed=run to get_<DATASET>),
+# so to exactly mirror "run 1" use --seed=1; for "run 2" use --seed=2, etc.
+# Default 42 matches the datasets.py default and is fine as a single-run
+# convention.
+absl.flags.DEFINE_integer('seed', 42,
+    'Seed for the train/val split. Set equal to the downstream run index '
+    '(1..runs) so the pretrain subset matches that run exactly.')
 FLAGS = absl.flags.FLAGS
+
+
+# Per-dataset validation split size used by paper/utils/datasets.py. We need
+# to match this exactly because split_dataset first carves off `val_size`
+# samples and only then takes the train_size subset from the remainder — so
+# any mismatch here would shift which indices end up in the training subset.
+_VAL_SIZE = {'CIFAR10': 6000, 'SVHN': 6000, 'CINIC10': 10}
 
 
 # Per-dataset specs: torchvision dataset class, its train-split kwargs,
@@ -251,6 +286,17 @@ def main(argv):
     else:
         ds = spec['cls'](FLAGS.data_dir, download=True,
                          transform=TwoViews(aug), **spec['split_kwargs'])
+    # Optional same-data-budget subsetting. When --train_examples > 0 we
+    # reproduce downstream's seeded split EXACTLY so the pretrain subset is
+    # the same image indices that train.py will hand to Memory Wrap. We
+    # discard the val subset because contrastive pretraining doesn't
+    # validate — the loss isn't an accuracy proxy.
+    if FLAGS.train_examples > 0:
+        ds, _ = split_dataset(ds, FLAGS.train_examples,
+                              _VAL_SIZE[FLAGS.dataset], FLAGS.seed)
+        print(f'Subsetting to {len(ds)} samples (seed={FLAGS.seed}, '
+              f'val_size={_VAL_SIZE[FLAGS.dataset]}) — matches downstream '
+              f"train.py with train_examples={FLAGS.train_examples}.")
     # drop_last=True: SupCon needs a predictable 2B batch shape; dropping
     # the incomplete final batch avoids per-epoch shape edge cases.
     # persistent_workers=True: don't tear down and respawn worker processes
@@ -335,11 +381,23 @@ def main(argv):
     # 'modality' key is informational — train.py reads state_dict only.
     # Save path includes both dataset and loss so runs don't clobber each
     # other when pilot-comparing across datasets or objectives.
-    out = f'models/{FLAGS.dataset}/{FLAGS.loss}/{FLAGS.model}/1.pt'
+    # Include the data budget in the save path so 'full' and budgeted runs
+    # (e.g. 2000) live side-by-side instead of clobbering each other. Using
+    # the string 'full' for the unbudgeted case keeps backward-readable
+    # paths and mirrors the convention in config/train.yaml where 100000
+    # informally means "the whole training set".
+    budget_dir = 'full' if FLAGS.train_examples == 0 else str(FLAGS.train_examples)
+    out = f'models/{FLAGS.dataset}/{FLAGS.loss}/{FLAGS.model}/{budget_dir}/1.pt'
     os.makedirs(os.path.dirname(out), exist_ok=True)
+    # Record train_examples + seed in the checkpoint so it's auditable later
+    # (which subset was this encoder trained on?). Downstream train.py only
+    # reads model_state_dict from the pretrained_encoder file, so the extra
+    # keys are harmless metadata.
     torch.save({'model_state_dict': model.state_dict(), 'model_name': FLAGS.model,
                 'num_classes': 10, 'modality': f'{FLAGS.loss}_pretrained',
-                'dataset_name': FLAGS.dataset}, out)
+                'dataset_name': FLAGS.dataset,
+                'train_examples': FLAGS.train_examples,
+                'seed': FLAGS.seed}, out)
     print(f'Saved {out}')
 
 
