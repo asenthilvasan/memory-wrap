@@ -89,6 +89,21 @@ absl.flags.DEFINE_float('hybrid_alpha', 0.5, 'SupCon weight in hybrid loss (0..1
 # Large LR is standard for contrastive pretraining; cosine schedule below
 # anneals it smoothly to zero. If you cut batch_size, cut lr proportionally.
 absl.flags.DEFINE_float('lr', 0.5, 'Learning rate (SGD)')
+# Linear LR warmup at the start of training. Matches the SupCon paper's
+# reference implementation. CRITICAL when a projection head is used: a
+# freshly-initialized 2-layer MLP + full lr=0.5 collapses features in the
+# first few batches (loss gets stuck at log(2B-1) ~ 6.24 for batch=256),
+# and once collapsed, gradients through the uniform softmax vanish and the
+# run can't recover. Warmup gives the head a gentle start before the full
+# LR kicks in. 10 epochs matches the SupCon CIFAR-10 recipe.
+# Default 0 (disabled) matches the original working recipe. Warmup is mainly
+# useful when --projection_dim > 0 (the freshly-initialized MLP head can't
+# survive full LR on step 1), so enable it together with the projection
+# head, not on its own.
+absl.flags.DEFINE_integer('warmup_epochs', 0,
+    'Linear LR warmup from ~0 up to --lr over this many epochs, then cosine '
+    'decay. 0 (default) = plain cosine schedule from epoch 0. Set to ~10 '
+    'when using --projection_dim > 0.')
 absl.flags.DEFINE_string('data_dir', 'datasets', 'Dataset directory')
 # Which image dataset to pretrain on. Both are 32x32 10-class datasets so the
 # augmentation recipe and backbone architectures work for either, but they
@@ -129,10 +144,27 @@ absl.flags.DEFINE_integer('seed', 42,
 # encoder state_dict is saved, so downstream train.py is unchanged.
 # Set to 0 to disable the projection head entirely (legacy behaviour, useful
 # for ablation: "does the projection head matter for our setup?").
-absl.flags.DEFINE_integer('projection_dim', 128,
+# Default is 0 (disabled) to reproduce the original working recipe. Enable
+# this (e.g. --projection_dim=128) together with --projection_bn=True and
+# an appropriate LR to experiment with the canonical SupCon/SimCLR setup.
+# NOTE: in this repo, enabling the projection head at high LR (0.5) OR
+# without BatchNorm has been observed to cause dimensional collapse (loss
+# stuck at log(2B-1) ~ 6.24). Keep default off unless actively debugging.
+absl.flags.DEFINE_integer('projection_dim', 0,
     'Output dim of the 2-layer MLP projection head used during pretraining. '
-    '128 = SupCon/SimCLR default. 0 = disable (apply loss directly to '
-    'encoder features, legacy behaviour).')
+    '128 = SupCon/SimCLR canonical. 0 = disabled (default, apply loss '
+    'directly to encoder features; matches the original working recipe).')
+# Optional BatchNorm1d between the first Linear and the ReLU inside the
+# projection head. NOT used by the SupCon/SimCLR reference recipes but IS
+# used by BYOL, MoCo v3, DINO, and other methods. BN forces every hidden
+# dimension to have mean 0 / unit std across the batch, which makes total
+# dimensional collapse (all features landing on the same point/line of the
+# 128-sphere) geometrically impossible. Enable this if you see loss stuck
+# at log(2B-1) ~ 6.24 for batch=256 even after matching the SupCon LR.
+absl.flags.DEFINE_bool('projection_bn', False,
+    'Insert BatchNorm1d between the first Linear and ReLU of the projection '
+    'head. Mitigates dimensional collapse. Default off (matches SupCon/SimCLR '
+    'reference); turn on if features collapse (loss sits at log(2B-1)).')
 FLAGS = absl.flags.FLAGS
 
 
@@ -351,14 +383,22 @@ def main(argv):
             enc_dim = model.forward_encoder(dummy).shape[1]
         model.train()
         # 2-layer MLP: (enc_dim -> enc_dim -> projection_dim). Hidden width
-        # equal to encoder dim follows the SupCon paper's recipe.
-        projection = torch.nn.Sequential(
-            torch.nn.Linear(enc_dim, enc_dim),
+        # equal to encoder dim follows the SupCon paper's recipe. Optional
+        # BatchNorm1d between the first Linear and ReLU (see --projection_bn):
+        # not in the SupCon reference, but present in BYOL/MoCo v3/DINO and
+        # mitigates dimensional collapse when the encoder outputs have low
+        # between-sample variance at init.
+        layers = [torch.nn.Linear(enc_dim, enc_dim)]
+        if FLAGS.projection_bn:
+            layers.append(torch.nn.BatchNorm1d(enc_dim))
+        layers += [
             torch.nn.ReLU(inplace=True),
             torch.nn.Linear(enc_dim, FLAGS.projection_dim),
-        ).to(device)
-        print(f'Projection head: {enc_dim} -> {enc_dim} -> {FLAGS.projection_dim} '
-              f'(applied during pretraining only; discarded at save time).',
+        ]
+        projection = torch.nn.Sequential(*layers).to(device)
+        bn_tag = ' (with BatchNorm1d)' if FLAGS.projection_bn else ''
+        print(f'Projection head{bn_tag}: {enc_dim} -> {enc_dim} -> '
+              f'{FLAGS.projection_dim} (pretraining only; discarded at save).',
               flush=True)
     else:
         # Legacy / ablation: identity head. Loss applied directly to encoder.
@@ -373,9 +413,34 @@ def main(argv):
     opt = torch.optim.SGD(
         list(model.parameters()) + list(projection.parameters()),
         lr=FLAGS.lr, momentum=0.9, weight_decay=1e-4, nesterov=True)
-    # Cosine schedule: smoothly anneals LR from `lr` to 0 over all epochs.
-    # Empirically better than step schedules for contrastive pretraining.
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=FLAGS.epochs)
+    # LR schedule: linear warmup (epochs 0..warmup_epochs) followed by cosine
+    # decay (warmup_epochs..epochs). Warmup starts at lr * 1e-2 to avoid a
+    # hard zero (which would stall SGD+momentum). Cosine phase anneals from
+    # FLAGS.lr to 0 over the remaining epochs.
+    #
+    # Why warmup matters here: the freshly-initialized projection head has
+    # no prior and can't survive LR=0.5 on the first few steps. Without
+    # warmup, projection-head runs collapse (loss = log(2B-1), all features
+    # identical, gradients vanish). With warmup, the head gently enters the
+    # useful regime before the full LR is applied. See --warmup_epochs.
+    if FLAGS.warmup_epochs > 0:
+        warmup = torch.optim.lr_scheduler.LinearLR(
+            opt, start_factor=1e-2, end_factor=1.0,
+            total_iters=FLAGS.warmup_epochs)
+        cosine = torch.optim.lr_scheduler.CosineAnnealingLR(
+            opt, T_max=max(1, FLAGS.epochs - FLAGS.warmup_epochs))
+        sched = torch.optim.lr_scheduler.SequentialLR(
+            opt, schedulers=[warmup, cosine], milestones=[FLAGS.warmup_epochs])
+        print(f'LR schedule: linear warmup over {FLAGS.warmup_epochs} epochs '
+              f'(lr scales from {FLAGS.lr*1e-2:.4f} to {FLAGS.lr}), then '
+              f'cosine decay over the remaining '
+              f'{FLAGS.epochs - FLAGS.warmup_epochs} epochs.', flush=True)
+    else:
+        # Legacy: plain cosine from epoch 0. Works without a projection head
+        # but will collapse the projection head run at default lr.
+        sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=FLAGS.epochs)
+        print('LR schedule: cosine decay (no warmup). WARNING: collapse-prone '
+              'when --projection_dim > 0 at high LR.', flush=True)
     # Automatic mixed precision: roughly 2x training speedup on modern GPUs
     # with negligible accuracy impact. GradScaler handles the dynamic loss
     # scaling needed to prevent fp16 gradient underflow.
@@ -383,6 +448,13 @@ def main(argv):
 
     # --- Training loop ------------------------------------------------------
     model.train()
+    # One-time diagnostic helper: after the first forward pass of epoch 1, we
+    # print the feature statistics (mean pairwise cosine sim, feature std per
+    # dim) so collapse is immediately visible in the logs. If `mean_cos` is
+    # ~1.0 and per-dim std is ~0 at epoch 1, features are collapsed and no
+    # amount of additional epochs will fix it --- you need --projection_bn or
+    # a different LR.
+    printed_diag = False
     for ep in range(1, FLAGS.epochs + 1):
         for (v1, v2), y in loader:
             # Stack both views into a single tensor of shape [2B, 3, 32, 32].
@@ -410,6 +482,27 @@ def main(argv):
                     l_sup = contrastive_loss(feat, y, FLAGS.temperature)
                     l_sim = contrastive_loss(feat, None, FLAGS.temperature)
                     loss = FLAGS.hybrid_alpha * l_sup + (1 - FLAGS.hybrid_alpha) * l_sim
+
+            # One-shot diagnostic: first batch of epoch 1 only. Runs after the
+            # autocast block using the already-computed `feat` (cast to fp32
+            # for numerically stable stats). Distinguishes "features are fine
+            # but loss is high" (expected early; mean_cos near 0, per_dim_std
+            # non-trivial) from "features are already collapsed" (mean_cos
+            # near 1 and/or per_dim_std near 0; needs --projection_bn or a
+            # different LR / init).
+            if not printed_diag:
+                with torch.no_grad():
+                    f32 = feat.float()
+                    sim = f32 @ f32.T
+                    sim.fill_diagonal_(0)
+                    n = f32.size(0)
+                    mean_cos = sim.sum().item() / (n * (n - 1))
+                    per_dim_std = f32.std(dim=0).mean().item()
+                print(f'[diag ep1/batch1] mean_cos(off-diag)={mean_cos:.4f}  '
+                      f'per_dim_std(mean)={per_dim_std:.4f}  '
+                      f'(mean_cos ~ 1.0 OR per_dim_std ~ 0 => features '
+                      f'collapsed; try --projection_bn)', flush=True)
+                printed_diag = True
 
             # scaler.scale: multiplies loss by dynamic scale factor to keep
             # fp16 gradients in representable range.
