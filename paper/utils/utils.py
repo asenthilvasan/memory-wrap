@@ -268,6 +268,10 @@ def eval_std(model:torch.nn.Module,loader:torch.utils.data.DataLoader,loss_crite
             target = target.to(device)
             
             output = model(data)
+            # Std models in this codebase (MobileNetV2, ResNet, etc.)
+            # return (logits, features); we only need the logits.
+            if isinstance(output, tuple):
+                output = output[0]
 
             loss = loss_criterion(output, target) 
             pred = output.data.max(1, keepdim=True)[1]

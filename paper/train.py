@@ -117,6 +117,10 @@ def train_std_model(model:torch.nn.Module,train_loader:torch.utils.data.DataLoad
             # training step
             with torch.cuda.amp.autocast():
                 outputs  = model(data)
+                # Std models in this codebase (MobileNetV2, ResNet, etc.)
+                # return (logits, features); CE wants just the logits.
+                if isinstance(outputs, tuple):
+                    outputs = outputs[0]
                 loss = loss_criterion(outputs, y)
 
             scaler.scale(loss).backward()
@@ -170,6 +174,10 @@ def run_experiment(config:dict,modality:str):
             if f'/{tag}/' in FLAGS.pretrained_encoder:
                 suffix = f'_{tag}'
                 break
+    # Distinguish linear-probe (frozen encoder) from fine-tune runs so they
+    # don't overwrite each other in the same models/ directory.
+    if FLAGS.freeze_encoder:
+        suffix += '_frozen'
     modality_dir = FLAGS.modality + suffix
     path_saving_model = 'models/{}/{}/{}/{}/'.format(dataset_name,modality_dir, config['model'],config['train_examples'])
     if save and not os.path.isdir(path_saving_model): 
