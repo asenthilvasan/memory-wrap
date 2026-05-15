@@ -223,9 +223,15 @@ def run_experiment(config:dict,modality:str):
 
             # perform 5 times the validation to stabilize results (due to random selection of memory samples)
             init_eval_time = time.time()
-            for _ in range(5):
+            print(f'[eval] Starting 5x evaluation over '
+                  f'{len(test_loader.dataset)} test samples '
+                  f'(silent until each pass completes)...', flush=True)
+            for eval_idx in range(5):
                 best_acc, best_loss = utils.eval_memory(model,test_loader, mem_loader,loss_criterion,device)
                 cum_acc.append(best_acc)
+                print(f'[eval] {eval_idx+1}/5 acc={best_acc:.2f}  '
+                      f'loss={best_loss:.4f}  elapsed={(time.time()-init_eval_time)/60:.1f}min',
+                      flush=True)
             best_acc = np.mean(cum_acc)
             end_eval_time = time.time()
 
