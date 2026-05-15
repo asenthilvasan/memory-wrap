@@ -16,7 +16,7 @@ echo "===== Cell 1: Scratch + Linear ====="
 python -u train.py --modality=std \
     2>&1 | tee $LOG/01_scratch_linear.txt
 
-echo "===== Cell 2: Scratch + MW (skip if already done) ====="
+echo "===== Cell 2: Scratch + MW ====="
 python -u train.py --modality=encoder_memory \
     2>&1 | tee $LOG/02_scratch_mw.txt
 

@@ -68,12 +68,8 @@ python -u train.py --modality=std \
     2>&1 | tee $LOG/01_cinic_scratch_linear.txt
 
 echo "===== Cell 2: Scratch + MW (skip if already done) ====="
-if [ ! -f models/CINIC10/encoder_memory/mobilenet/2000/conf.p ]; then
-    python -u train.py --modality=encoder_memory \
-        2>&1 | tee $LOG/02_cinic_scratch_mw.txt
-else
-    echo "Already done, skipping."
-fi
+python -u train.py --modality=encoder_memory \
+    2>&1 | tee $LOG/02_cinic_scratch_mw.txt
 
 echo "===== Cell 3: SupCon + Linear (frozen) ====="
 python -u train.py --modality=std --pretrained_encoder=$ENC --freeze_encoder=True \
