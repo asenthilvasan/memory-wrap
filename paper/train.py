@@ -210,8 +210,23 @@ def run_experiment(config:dict,modality:str):
             ckpt = torch.load(FLAGS.pretrained_encoder, map_location=device)
             model.load_state_dict(ckpt['model_state_dict'], strict=False)
         if FLAGS.freeze_encoder:
+            # Keep the classification head trainable; freeze everything else.
+            # Different model variants name the head differently:
+            #   - std MobileNetV2          -> self.linear
+            #   - MemoryMobileNetV2        -> self.mw
+            #   - EncoderMemoryMobileNetV2 -> self.mw
+            #   - torchvision-style nets   -> self.classifier / self.fc / self.head
+            HEAD_PREFIXES = ('mw.', 'linear.', 'classifier.', 'fc.', 'head.')
             for n, p in model.named_parameters():
-                if not n.startswith('mw.'): p.requires_grad_(False)
+                if not any(n.startswith(pref) for pref in HEAD_PREFIXES):
+                    p.requires_grad_(False)
+            trainable = [p for p in model.parameters() if p.requires_grad]
+            if not trainable:
+                raise RuntimeError(
+                    f"freeze_encoder=True left zero trainable parameters. "
+                    f"Model class {type(model).__name__} has no parameter "
+                    f"starting with {HEAD_PREFIXES}. Add its head prefix here."
+                )
 
         # training parameters
         optimizer = torch.optim.SGD([p for p in model.parameters() if p.requires_grad],**dict_optim)
