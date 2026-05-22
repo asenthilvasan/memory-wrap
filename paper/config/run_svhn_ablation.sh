@@ -4,7 +4,7 @@ set -o pipefail  # make `python ... | tee ...` propagate python's exit status
 cd /workspace/memory-wrap-SENN/paper
 
 ENC=models/SVHN/supcon/mobilenet/2000/1.pt
-LOG=/root/cinic_run/logs
+LOG=/root/svhn_run_500/logs # this is a bug, should be svhn_run/
 
 # Verify encoder exists before launching downstream sweep
 if [ ! -f "$ENC" ]; then
