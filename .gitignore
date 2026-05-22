@@ -8,3 +8,7 @@ core
 paper/datasets/
 memory_wrap_cont_*
 images/
+log*
+models
+paper/images
+*.bak
