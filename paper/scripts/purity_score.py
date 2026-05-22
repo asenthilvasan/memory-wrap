@@ -25,11 +25,17 @@ absl.flags.DEFINE_string("path", None, "Dir of .pt files or single .pt path.")
 absl.flags.DEFINE_string("dir_dataset", '../datasets/', "Datasets directory.")
 absl.flags.DEFINE_integer("num_redraws", 5, "Random memory draws per checkpoint.")
 absl.flags.DEFINE_string("topk", "1,5,10", "Comma-separated K values.")
+absl.flags.DEFINE_integer("max_images", 0,
+    "Max test images to evaluate. 0 = all. When > 0 the test loader is "
+    "rebuilt with shuffle=True and --seed_test so the same subset is used "
+    "across runs (matches generate_memory_images.py).")
+absl.flags.DEFINE_integer("seed_test", 42,
+    "Seed for the shuffled test-loader when --max_images > 0.")
 absl.flags.mark_flag_as_required("path")
 FLAGS = absl.flags.FLAGS
 
 
-def purity(model, test_loader, mem_loader, topk, num_redraws, device):
+def purity(model, test_loader, mem_loader, topk, num_redraws, device, max_images=0):
     model.eval()
     soft, hard = [], {K: [] for K in topk}
     with torch.no_grad():
@@ -37,6 +43,12 @@ def purity(model, test_loader, mem_loader, topk, num_redraws, device):
             mem_iter = iter(mem_loader)
             s_sum, h_sum, n = 0.0, {K: 0.0 for K in topk}, 0
             for q_imgs, q_lbl in test_loader:
+                if max_images > 0 and n >= max_images:
+                    break
+                if max_images > 0 and n + q_imgs.size(0) > max_images:
+                    keep = max_images - n
+                    q_imgs = q_imgs[:keep]
+                    q_lbl = q_lbl[:keep]
                 try:
                     m_imgs, m_lbl = next(mem_iter)
                 except StopIteration:
@@ -87,10 +99,14 @@ def run_experiment(path, dataset_dir):
             batch_size_memory=ckpt['mem_examples'],
             size_train=ckpt['train_examples'], seed=run,
         )
+        if FLAGS.max_images > 0:
+            gen = torch.Generator().manual_seed(FLAGS.seed_test)
+            test_loader = torch.utils.data.DataLoader(
+                test_loader.dataset, batch_size=500, shuffle=True, generator=gen)
 
         t0 = time.time()
         soft, hard = purity(model, test_loader, mem_loader, topk,
-                            FLAGS.num_redraws, device)
+                            FLAGS.num_redraws, device, max_images=FLAGS.max_images)
         run_soft.append(float(np.mean(soft)))
         for K in topk: run_hard[K].append(float(np.mean(hard[K])))
 
