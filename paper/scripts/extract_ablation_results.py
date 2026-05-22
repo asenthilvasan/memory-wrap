@@ -2,8 +2,8 @@
 
 Reads every ``NN_*.txt`` log in a directory (the convention used by
 ``paper/config/run_*_ablation*.sh`` scripts), pulls the FINAL "Run:..."
-summary line printed by ``paper/train.py`` for each, and prints a markdown
-table plus an optional CSV of mean/std test accuracy across runs.
+summary line printed by ``paper/train.py`` for each, and prints a results
+table in plain text (default), markdown, or CSV.
 
 The summary line format we parse is fixed by ``paper/train.py:284``:
 
@@ -14,9 +14,16 @@ We take the LAST such line in each log because train.py prints one per run
 and the final one carries the running mean/std over all completed runs.
 
 Usage:
+    # Default: pretty aligned plain-text table to stdout
     python -u scripts/extract_ablation_results.py /root/svhn_run_500/logs
+
+    # Markdown table (good for pasting into analysis_*.md files)
     python -u scripts/extract_ablation_results.py /root/svhn_run_500/logs \\
-        --csv /root/svhn_run_500/logs/results.csv
+        --format=markdown
+
+    # CSV to a file
+    python -u scripts/extract_ablation_results.py /root/svhn_run_500/logs \\
+        --format=csv --out /root/svhn_run_500/logs/results.csv
 """
 import argparse
 import glob
@@ -76,51 +83,131 @@ def cell_label(filename):
     return stem
 
 
+def collect_rows(log_dir, pattern):
+    """Walk a logs directory and return one row per matched log file.
+
+    Each row is a dict so format-specific renderers can pick the columns
+    they care about without re-parsing.
+    """
+    paths = sorted(glob.glob(os.path.join(log_dir, pattern)))
+    rows = []
+    for p in paths:
+        parsed = parse_log(p)
+        row = {
+            "file": os.path.basename(p),
+            "label": cell_label(p),
+            "runs": None,
+            "mean": None,
+            "std": None,
+            "ok": parsed is not None,
+        }
+        if parsed is not None:
+            row["runs"], row["mean"], row["std"] = parsed
+        rows.append(row)
+    return rows
+
+
+def render_plain(rows, log_dir):
+    """Aligned plain-text table; the default human-readable format.
+
+    Columns: Cell | Runs | Test Accuracy. We omit the log filename here
+    because the cell label already encodes the same information and the
+    extra column makes the table painfully wide on a 100-col terminal.
+    Use --format=markdown if you want filenames preserved for citation.
+    """
+    successful = [r for r in rows if r["ok"]]
+    best_mean = max((r["mean"] for r in successful), default=None)
+
+    # Compute column widths from the data so the table auto-fits.
+    label_w = max((len(r["label"]) for r in rows), default=4)
+    label_w = max(label_w, len("Cell"))
+    runs_w = max(len("Runs"), 4)
+    acc_w = max(len("Test Accuracy"), len("99.99 \u00b1 9.99"))
+    # Trailing column for the "<- best" marker; empty for non-best rows.
+    mark_w = len("  <- best")
+
+    sep = "-" * (label_w + 2 + runs_w + 2 + acc_w + mark_w)
+    out = []
+    out.append(f"\nResults from: {log_dir}")
+    out.append(f"Cells found:  {len(rows)} ({len(successful)} completed, "
+               f"{len(rows) - len(successful)} incomplete)\n")
+    out.append(sep)
+    out.append(f"{'Cell':<{label_w}}  {'Runs':>{runs_w}}  {'Test Accuracy':>{acc_w}}")
+    out.append(sep)
+    for r in rows:
+        if not r["ok"]:
+            line = (f"{r['label']:<{label_w}}  "
+                    f"{'-':>{runs_w}}  "
+                    f"{'(no Run summary)':>{acc_w}}")
+        else:
+            acc = f"{r['mean']:.2f} \u00b1 {r['std']:.2f}"
+            mark = "  <- best" if r["mean"] == best_mean else ""
+            line = (f"{r['label']:<{label_w}}  "
+                    f"{r['runs']:>{runs_w}}  "
+                    f"{acc:>{acc_w}}{mark}")
+        out.append(line)
+    out.append(sep)
+    return "\n".join(out) + "\n"
+
+
+def render_markdown(rows):
+    """GitHub-flavored markdown table; use when pasting into a .md file."""
+    lines = []
+    lines.append("| Cell | Log file | Runs | Test Acc (mean \u00b1 std) |")
+    lines.append("|------|----------|------|---------------------------|")
+    for r in rows:
+        if not r["ok"]:
+            lines.append(f"| {r['label']} | `{r['file']}` | \u2014 | "
+                         f"(no Run summary line found) |")
+        else:
+            lines.append(f"| {r['label']} | `{r['file']}` | {r['runs']} | "
+                         f"{r['mean']:.2f} \u00b1 {r['std']:.2f} |")
+    return "\n".join(lines) + "\n"
+
+
+def render_csv(rows):
+    """CSV: ``cell,log_file,runs,mean_acc,std_acc`` (one row per log)."""
+    out = ["cell,log_file,runs,mean_acc,std_acc"]
+    for r in rows:
+        if not r["ok"]:
+            out.append(f"\"{r['label']}\",{r['file']},,,")
+        else:
+            out.append(f"\"{r['label']}\",{r['file']},{r['runs']},"
+                       f"{r['mean']:.4f},{r['std']:.4f}")
+    return "\n".join(out) + "\n"
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("log_dir", help="Directory containing NN_*.txt train.py logs")
-    ap.add_argument("--csv", default=None,
-                    help="Optional path to also write a CSV of the same data")
+    ap.add_argument("--format", choices=["plain", "markdown", "csv"],
+                    default="plain",
+                    help="Output format (default: plain aligned text table)")
+    ap.add_argument("--out", default=None,
+                    help="Write to this file instead of stdout")
     ap.add_argument("--pattern", default="[0-9][0-9]_*.txt",
                     help="Glob pattern for log files (default: NN_*.txt)")
     args = ap.parse_args()
 
-    paths = sorted(glob.glob(os.path.join(args.log_dir, args.pattern)))
-    if not paths:
-        print(f"No logs matching {args.pattern} in {args.log_dir}", file=sys.stderr)
+    rows = collect_rows(args.log_dir, args.pattern)
+    if not rows:
+        print(f"No logs matching {args.pattern} in {args.log_dir}",
+              file=sys.stderr)
         sys.exit(1)
 
-    rows = []  # (filename, label, runs, mean, std) or (filename, label, None, None, None)
-    for p in paths:
-        parsed = parse_log(p)
-        label = cell_label(p)
-        fname = os.path.basename(p)
-        if parsed is None:
-            rows.append((fname, label, None, None, None))
-        else:
-            runs, mean, std = parsed
-            rows.append((fname, label, runs, mean, std))
+    if args.format == "plain":
+        text = render_plain(rows, args.log_dir)
+    elif args.format == "markdown":
+        text = render_markdown(rows)
+    else:  # csv
+        text = render_csv(rows)
 
-    # Markdown table to stdout.
-    print()
-    print("| Cell | Log file | Runs | Test Acc (mean ± std) |")
-    print("|------|----------|------|------------------------|")
-    for fname, label, runs, mean, std in rows:
-        if runs is None:
-            print(f"| {label} | `{fname}` | — | (no Run summary line found) |")
-        else:
-            print(f"| {label} | `{fname}` | {runs} | {mean:.2f} ± {std:.2f} |")
-    print()
-
-    if args.csv:
-        with open(args.csv, "w") as fh:
-            fh.write("cell,log_file,runs,mean_acc,std_acc\n")
-            for fname, label, runs, mean, std in rows:
-                if runs is None:
-                    fh.write(f"\"{label}\",{fname},,,\n")
-                else:
-                    fh.write(f"\"{label}\",{fname},{runs},{mean:.4f},{std:.4f}\n")
-        print(f"Wrote CSV: {args.csv}")
+    if args.out:
+        with open(args.out, "w") as fh:
+            fh.write(text)
+        print(f"Wrote {args.format} table to: {args.out}")
+    else:
+        sys.stdout.write(text)
 
 
 if __name__ == "__main__":
