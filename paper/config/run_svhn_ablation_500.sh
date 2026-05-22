@@ -10,18 +10,21 @@
 #
 # PREREQUISITES (run once before this script):
 #   1. Pretrain a SupCon encoder on the SAME 500-image subset downstream
-#      will see (same-data-budget). Batch 128 because batch 256 + drop_last
-#      on 500 samples gives only 1 SGD step/epoch.
+#      will see (same-data-budget). Batch 64 because batch 256 + drop_last
+#      on 500 samples gives only 1 SGD step/epoch; batch 64 gives 7
+#      steps/epoch, matching the 7 steps/epoch the 2000-budget recipe got
+#      at batch 256, so total SGD updates are conserved at the original
+#      280 (= 7 * 40).
 #
 #      LR follows the SupCon/SimCLR linear scaling rule (lr = base_lr *
 #      batch / 256). The 2000-budget run used batch=256, lr=0.5, so at
-#      batch=128 we use lr=0.25.
+#      batch=64 we use lr=0.125.
 #
 #      python -u pretrain_supcon.py \
 #          --dataset=SVHN --loss=supcon --model=mobilenet \
 #          --train_examples=500 --seed=1 \
-#          --epochs=40 --batch_size=128 \
-#          --lr=0.25 --temperature=0.07 --projection_dim=0 \
+#          --epochs=40 --batch_size=64 \
+#          --lr=0.125 --temperature=0.07 --projection_dim=0 \
 #          2>&1 | tee /root/svhn_run_500/logs/00_pretrain_svhn_500.txt
 #
 #      Output: models/SVHN/supcon/mobilenet/500/1.pt
@@ -48,8 +51,9 @@ fi
 cp "$YAML" "${YAML}.bak"
 sed -i 's/^dataset_name:.*/dataset_name: SVHN/' "$YAML"
 sed -i 's/^train_examples:.*/train_examples: 500/' "$YAML"
-echo "Set $YAML -> dataset_name: SVHN, train_examples: 500"
-grep -E "^(dataset_name|train_examples):" "$YAML"
+sed -i 's/^batch_size_train:.*/batch_size_train: 64/' "$YAML"
+echo "Set $YAML -> dataset_name: SVHN, train_examples: 500, batch_size_train: 64"
+grep -E "^(dataset_name|train_examples|batch_size_train):" "$YAML"
 
 # Restore yaml on exit (success, failure, or Ctrl-C)
 restore_yaml() {
